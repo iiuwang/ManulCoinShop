@@ -1,7 +1,8 @@
-import { inject, Injectable } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { LoginData } from "../models/login-data.interface";
 import { User } from "../models/user.interface";
+import {Observable, BehaviorSubject} from "rxjs";
 
 type UserWithPassword = User & { password: string };
 
@@ -10,7 +11,8 @@ type UserWithPassword = User & { password: string };
 })
 export class AuthService{
 
-    //currentUser
+    private currentUserSubject = new BehaviorSubject<User | null>(null);
+    public currentUser$ = this.currentUserSubject.asObservable();
     
     private users: UserWithPassword[] = [
         {
@@ -25,13 +27,28 @@ export class AuthService{
 
     public login(data: LoginData): boolean{
         
-        const login = this.users.find(user => user.login === data.login && user.password === data.password)
+        const foundUser = this.users.find(user => user.login === data.login && user.password === data.password)
 
-        if(!login){
+        if(!foundUser){
             return false;
         }
 
-        return true;
-        
+        const user: User ={
+            id: foundUser.id,
+            name: foundUser.name,
+            balance: foundUser.balance,
+            login: foundUser.login
+        }
+        this.currentUserSubject.next(user);
+
+        return true; 
+    }
+
+    public logout(): void{
+        this.currentUserSubject.next(null);
+    }
+    
+    public getCurrentUser(): User | null{
+        return this.currentUserSubject.value;
     }
 }
