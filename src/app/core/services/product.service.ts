@@ -1,26 +1,22 @@
 import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
 import { Product } from "../models/product.interface";
-import { Observable,  of } from "rxjs";
+import { Observable} from "rxjs";
 
 @Injectable({
     providedIn: 'root',
 })
 export class ProductService{
+    private readonly apiUrl = 'api/products';
+    constructor(private http: HttpClient){}
     
-    private products: Product[] = [
-        {
-            id: 1,
-            name: 'Product 1',
-            price: 1000,
-            image: 'что-то'
-        }
-    ]
 
     getProducts(): Observable<Product[]>{
-        return of(this.products)
+        return  this.http.get<Product[]>(this.apiUrl);
     }
 
-    getProductById(id: number): Observable<Product | undefined>{
-        return of(this.products.find(product=>product.id === id))
+    getProductById(id: number): Observable<Product>{
+        return this.http.get<Product>(`${this.apiUrl}/${id}`);
+        //return of(this.products.find(product=>product.id === id))
     }
 }

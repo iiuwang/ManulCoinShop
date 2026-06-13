@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { LoginData } from "../models/login-data.interface";
 import { User } from "../models/user.interface";
-import {Observable, BehaviorSubject} from "rxjs";
+import {Observable, BehaviorSubject, map} from "rxjs";
 
 type UserWithPassword = User & { password: string };
 
@@ -11,37 +11,40 @@ type UserWithPassword = User & { password: string };
 })
 export class AuthService{
 
+    private readonly apiUrl = 'api/users';
+
     private currentUserSubject = new BehaviorSubject<User | null>(null);
     public currentUser$ = this.currentUserSubject.asObservable();
     
-    private users: UserWithPassword[] = [
-        {
-            id: 1,
-            login: 'admin',
-            password: 'qwerty',
-            name: 'Алена',
-            balance: 5000
-        }
+    constructor(private readonly http: HttpClient){}
 
-    ]
+    public login(data: LoginData): Observable<boolean>{
 
-    public login(data: LoginData): boolean{
+        const params = new HttpParams().set('login', data.login).set('password', data.password);
+
+        return this.http.get<UserWithPassword[]>(this.apiUrl, {params}).pipe(
+            map(users =>{
+                const foundUser = users[0];
+
+                if(!foundUser){
+                    return false;
+                }
+
+                const user: User ={
+                    id: foundUser.id,
+                    name: foundUser.name,
+                    balance: foundUser.balance,
+                    login: foundUser.login
+                }
+                this.currentUserSubject.next(user);
         
-        const foundUser = this.users.find(user => user.login === data.login && user.password === data.password)
+                return true; 
+            })
+        )
+        
+        //const foundUser = this.users.find(user => user.login === data.login && user.password === data.password)
 
-        if(!foundUser){
-            return false;
-        }
-
-        const user: User ={
-            id: foundUser.id,
-            name: foundUser.name,
-            balance: foundUser.balance,
-            login: foundUser.login
-        }
-        this.currentUserSubject.next(user);
-
-        return true; 
+        
     }
 
     public logout(): void{
