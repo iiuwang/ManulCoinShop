@@ -13,10 +13,20 @@ export class AuthService{
 
     private readonly apiUrl = 'api/users';
 
-    private currentUserSubject = new BehaviorSubject<User | null>(null);
+    private currentUserSubject = new BehaviorSubject<User | null>(this.getSavedUser());
     public currentUser$ = this.currentUserSubject.asObservable();
     
     constructor(private readonly http: HttpClient){}
+
+    private getSavedUser(): User | null {
+        const savedUser = localStorage.getItem('currentUser');
+      
+        if (!savedUser) {
+          return null;
+        }
+      
+        return JSON.parse(savedUser);
+      }
 
     public login(data: LoginData): Observable<boolean>{
 
@@ -36,6 +46,7 @@ export class AuthService{
                     balance: foundUser.balance,
                     login: foundUser.login
                 }
+                localStorage.setItem('currentUser', JSON.stringify(user));
                 this.currentUserSubject.next(user);
         
                 return true; 
@@ -48,6 +59,7 @@ export class AuthService{
     }
 
     public logout(): void{
+        localStorage.removeItem('currentUser');
         this.currentUserSubject.next(null);
     }
     

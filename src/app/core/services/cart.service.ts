@@ -8,16 +8,24 @@ import { BehaviorSubject } from "rxjs";
 })
 export class CartService{
     
-    private cartItemsSubject = new BehaviorSubject<CartItem[]>([]);
+    private cartItems: CartItem[] = this.getSavedCartItems();
+    private cartItemsSubject = new BehaviorSubject<CartItem[]>(this.cartItems);
     public cartItems$ = this.cartItemsSubject.asObservable();
-    private cartItems: CartItem[] = [];
     private nextCartItemId = 0;
+
+    private getSavedCartItems(): CartItem[] {
+        const savedCartItems = localStorage.getItem('cartItems');
+        if (!savedCartItems) {
+          return [];
+        }
+        return JSON.parse(savedCartItems);
+      }
 
     public addToCart(product: Product): void{
         const productItem = this.cartItems.find(item => item.product.id === product.id)
         if(productItem){
             productItem.quantity++;
-            this.cartItemsSubject.next([...this.cartItems]);
+            this.saveCart();
             return;
         }
 
@@ -27,13 +35,13 @@ export class CartService{
             quantity: 1
         }
         this.cartItems.push(newCartItem);
-        this.cartItemsSubject.next([...this.cartItems]);
+        this.saveCart();
         
     }
 
     public deleteFromCart(itemDelete: CartItem): void{
         this.cartItems = this.cartItems.filter(cartItem => cartItem.id !==itemDelete.id);
-        this.cartItemsSubject.next([...this.cartItems]);
+        this.saveCart();
     }
 
     public changeQuantity(changeItem:  CartItem, newQuantity: number): void{
@@ -44,13 +52,13 @@ export class CartService{
         const item = this.cartItems.find(cartItem => cartItem.id === changeItem.id);
         if(item){
             item.quantity = newQuantity;
-            this.cartItemsSubject.next([...this.cartItems]);
+            this.saveCart();
         }
     }
 
     public clearCart(): void{
         this.cartItems = [];
-        this.cartItemsSubject.next([...this.cartItems]);
+        this.saveCart();
     }
 
     public getCartItems(): CartItem[]{
@@ -61,5 +69,11 @@ export class CartService{
         return this.cartItems.reduce((total, item) => {
             return total + item.product.price * item.quantity;
         }, 0);
+    }
+
+    private saveCart(): void{
+        localStorage.setItem('cartItems', JSON.stringify(this.cartItems));
+        this.cartItemsSubject.next([...this.cartItems]);
+
     }
 }

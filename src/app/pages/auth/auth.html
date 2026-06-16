@@ -1,0 +1,36 @@
+<main>
+    <section class="auth-header">
+        <h3>Добро пожаловать!</h3>
+        <h4>Войдите в свой аккаунт</h4>
+    </section>
+    <mat-card class="auth-card">
+        <form (ngSubmit)="onSubmit()" [formGroup]="form">
+            <mat-form-field>
+                <mat-label>Логин:</mat-label>
+                    <input matInput formControlName="login" type="password" />
+                    @if(form.get('login')?.hasError('required') && form.get('login')?.touched){
+                        <mat-error>Введите логин</mat-error>
+                    }
+                    @if(form.get('login')?.hasError('minlength') && form.get('login')?.touched){
+                        <mat-error>Минимальная длина логина 10 символов</mat-error>
+                    }
+            </mat-form-field>
+            <mat-form-field>
+                <mat-label>Пароль:</mat-label>
+                    <input matInput type="password" name="password" formControlName="password"/>
+                    @if(form.get('password')?.hasError('required') && form.get('password')?.touched){
+                        <mat-error>Введите пароль</mat-error>
+                    }
+                    @if(form.get('password')?.hasError('minlength') && form.get('password')?.touched){
+                        <mat-error>Минимальная длина пароля 10 символов</mat-error>
+                    }
+                
+            </mat-form-field>
+        
+            <button matButton="filled" type="submit" [disabled]="form.invalid">Войти</button>
+            @if(loginError()){
+                <mat-error>{{loginError()}}</mat-error>
+            }
+        </form>
+    </mat-card>
+</main>

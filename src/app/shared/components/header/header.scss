@@ -1,0 +1,68 @@
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 64px;
+    padding: 0 30px;
+    margin-bottom: 50px;
+    background-color: var(--mat-sys-primary);
+    color: var(--mat-sys-on-primary);
+  }
+  
+  .logo {
+    font-size: 28px;
+    color: var(--logo);
+    font-weight: 700;
+  }
+  
+  .menu {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .menu li {
+    list-style-type: none;
+    display: flex;
+    align-items: center;
+  }
+  
+  .user-info {
+    gap: 12px;
+    margin-right: 8px;
+  }
+  
+  .user-name {
+    font-size: 18px;
+    font-weight: 500;
+  }
+  
+  .balance {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.16);
+    font-size: 15px;
+  }
+  
+  .icon {
+    color: var(--mat-sys-on-primary);
+    transition: color 0.3s ease;
+  }
+  
+  .logout-button {
+    border: 1px solid currentColor;
+    border-radius: 20px;
+    padding: 6px 14px;
+    background: transparent;
+    color: var(--mat-sys-on-primary);
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+  
+  .icon:hover,
+  .logout-button:hover {
+    color: black;
+  }
