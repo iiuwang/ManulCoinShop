@@ -13,6 +13,31 @@ export class InMemoryDataService implements InMemoryDbService {
             price: 150,
             image: 'assets/images/products/selection.png',
         },
+        {
+            id: 2,
+            name: 'Кружка с манулом 2',
+            price: 160,
+            image: 'assets/images/products/selection.png',
+        },
+        {
+            id: 3,
+            name: 'Кружка с манулом 3',
+            price: 200,
+            image: 'assets/images/products/selection.png',
+        },
+        {
+            id: 4,
+            name: 'Кружка с манулом 4',
+            price: 100,
+            image: 'assets/images/products/selection.png',
+        },
+        {
+            id: 5,
+            name: 'Кружка с манулом 5',
+            price: 340,
+            image: 'assets/images/products/selection.png',
+        },
+
         ];
 
         const orders = [
@@ -28,8 +53,8 @@ export class InMemoryDataService implements InMemoryDbService {
         const users = [
             {
               id: 1,
-              login: 'admin',
-              password: 'qwerty',
+              login: 'adminadmin',
+              password: 'qwerty1234',
               name: 'Алена',
               balance: 5000,
             },
