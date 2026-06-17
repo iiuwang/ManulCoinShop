@@ -1,0 +1,53 @@
+<app-header></app-header>
+<main class="page-content">
+    <div>
+        <a routerLink="/catalog_products">Назад</a>
+    </div>
+    <div>
+        <h3>Корзина</h3>
+        <h4>{{ itemsCount() }} товара</h4>
+    </div>
+
+    <div class="cart">
+        @if (cartItems().length === 0) {
+            <div class="empty-cart">
+                <p>Корзина пуста</p>
+                <a routerLink="/catalog_products">Перейти в каталог</a>
+            </div>
+        }
+        @else {
+            <div class="products-list">
+                <div class="products-header">
+                    <span>Товар</span>
+                    <span>Количество</span>
+                    <span>Сумма</span>
+                </div>
+                @for (item of cartItems(); track item.id) {
+                    <div class="product-item">
+                        <div class="product-info">
+                            <img [src]="item.product.image" [alt]="item.product.name">
+                            <span>{{item.product.name}}</span>
+                            <span>{{item.product.price}}</span>
+                            <button (click)="removeFromCart(item)">Удалить</button>
+                        </div>
+                        <div class="product-quantity">
+                            <button (click)="decreaseQuantity(item)">-</button>
+                            <span>{{item.quantity}}</span>
+                            <button (click)="increaseQuantity(item)">+</button>
+                        </div>
+                        <div class="product-price">
+                            <span>{{item.product.price * item.quantity}}</span>
+                        </div>
+                        
+                    </div>
+                }
+            </div>
+            <div class="total-price">
+                <span>Итого: {{totalPrice()}}</span>
+                <button (click)="clearCart()">Очистить корзину</button>
+            </div>
+        }
+        
+    </div>
+    
+</main>
