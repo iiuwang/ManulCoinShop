@@ -1,11 +1,11 @@
 <app-header></app-header>
 <main class="page-content">
     <div>
-        <a routerLink="/catalog_products">Назад</a>
+        <a class="back-link" routerLink="/catalog_products">Назад</a>
     </div>
-    <div>
+    <div class="cart-header">
         <h3>Корзина</h3>
-        <h4>{{ itemsCount() }} товара</h4>
+        <!-- <h4>{{ itemsCount() }} товара</h4> -->
     </div>
 
     <div class="cart">
@@ -26,26 +26,44 @@
                     <div class="product-item">
                         <div class="product-info">
                             <img [src]="item.product.image" [alt]="item.product.name">
-                            <span>{{item.product.name}}</span>
-                            <span>{{item.product.price}}</span>
-                            <button (click)="removeFromCart(item)">Удалить</button>
+                            <div class="product-text">
+                                <span class="product-name">{{ item.product.name }}</span>
+                                <span class="product-price">{{ item.product.price }} коинов</span>
+                            </div>
+                            <button mat-icon-button type="button" class="remove-btn" aria-label="Удалить товар" (click)="removeFromCart(item)">
+                                <mat-icon>close</mat-icon>
+                            </button>
                         </div>
                         <div class="product-quantity">
-                            <button (click)="decreaseQuantity(item)">-</button>
+                            <button mat-icon-button (click)="decreaseQuantity(item)">
+                                <mat-icon>remove</mat-icon>
+                            </button>
                             <span>{{item.quantity}}</span>
-                            <button (click)="increaseQuantity(item)">+</button>
+                            <button mat-icon-button (click)="increaseQuantity(item)">
+                                <mat-icon>add</mat-icon>
+                            </button>
                         </div>
-                        <div class="product-price">
+                        <div class="products-price">
                             <span>{{item.product.price * item.quantity}}</span>
                         </div>
                         
                     </div>
                 }
+                <button mat-stroked-button class="clear-cart-btn" (click)="clearCart()">Очистить корзину</button>
             </div>
-            <div class="total-price">
-                <span>Итого: {{totalPrice()}}</span>
-                <button (click)="clearCart()">Очистить корзину</button>
-            </div>
+            
+            <aside class="total-price">
+                <h3>Итого</h3>
+                <div class="total-price__row">
+                    <span>Товары ({{ itemsCount() }})</span>
+                    <span>{{ totalPrice() }} коинов</span>
+                </div>
+                <div class="total-price__row total-price__row--total">
+                    <span>К оплате</span>
+                    <span class="total-price__value">{{ totalPrice() }} коинов</span>
+                </div>
+                <button mat-flat-button type="button" class="order-btn">Оформить заказ</button>
+            </aside>
         }
         
     </div>
