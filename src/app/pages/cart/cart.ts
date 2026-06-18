@@ -4,10 +4,12 @@ import { CartItem } from '../../core/models/cart-item.interface';
 import { CartService } from '../../core/services/cart.service';
 import { Header } from '../../shared/components/header/header';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-cart',
-  imports: [Header, RouterLink],
+  imports: [Header, RouterLink, MatIconModule, MatButtonModule],
   templateUrl: './cart.html',
   styleUrl: './cart.scss',
 })

@@ -44,9 +44,33 @@ export class InMemoryDataService implements InMemoryDbService {
             {
                 id: 1,
                 date: '2026-05-21',
-                items: [],
-                total_price: 0,
+                items: [
+                    {
+                        id: 1,
+                        product: products[0],
+                        quantity: 2,
+                    },
+                    {
+                        id: 2,
+                        product: products[2],
+                        quantity: 1,
+                    },
+                ],
+                total_price: 500,
                 status: 'Сборка',
+            },
+            {
+                id: 2,
+                date: '2026-06-10',
+                items: [
+                    {
+                        id: 1,
+                        product: products[1],
+                        quantity: 1,
+                    },
+                ],
+                total_price: 160,
+                status: 'В пути',
             },
         ];
 
