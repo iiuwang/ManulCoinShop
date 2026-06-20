@@ -55,14 +55,17 @@
             <aside class="total-price">
                 <h3>Итого</h3>
                 <div class="total-price__row">
-                    <span>Товары ({{ itemsCount() }})</span>
-                    <span>{{ totalPrice() }} коинов</span>
+                    <span>Товаров: {{ itemsCount() }}</span>
+                    <!-- <span>{{ totalPrice() }} коинов</span> -->
                 </div>
                 <div class="total-price__row total-price__row--total">
                     <span>К оплате</span>
                     <span class="total-price__value">{{ totalPrice() }} коинов</span>
                 </div>
-                <button mat-flat-button type="button" class="order-btn">Оформить заказ</button>
+                <button mat-flat-button type="button" class="order-btn" (click)="checkout()">Оформить заказ</button>
+                @if (orderError()) {
+                    <div class="error-message">{{ orderError() }}</div>
+                }
             </aside>
         }
         

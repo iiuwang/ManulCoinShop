@@ -66,4 +66,14 @@ export class AuthService{
     public getCurrentUser(): User | null{
         return this.currentUserSubject.value;
     }
+    
+    public updateBalance(newBalance: number): void {
+        const user = this.getCurrentUser();
+        if (!user) return;
+      
+        const updatedUser = { ...user, balance: newBalance };
+        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        this.currentUserSubject.next(updatedUser);
+      }
+
 }

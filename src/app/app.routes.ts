@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 import { CatalogProducts } from './pages/catalog_products/catalog_products';
 import { Auth } from './pages/auth/auth';
-import {authGuard} from './core/services/guards/auth.guard';
-import {userGuard} from './core/services/guards/user.guard';
+import {authGuard} from './core/guards/auth.guard';
+import {userGuard} from './core/guards/user.guard';
 import { Cart } from './pages/cart/cart';
 import { Orders } from './pages/orders/orders';
 
