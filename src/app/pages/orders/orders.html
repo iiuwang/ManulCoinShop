@@ -50,7 +50,7 @@
           <div class="order-card-meta">
             <div class="order-meta-row">
               <span class="order-id">Заказ - {{ order.id }}</span>
-              <span class="order-date">{{ order.date }}</span>
+              <span class="order-date">{{ order.date.split('T')[0] }}</span>
               <span class="order-status" [attr.data-status]="order.status">
                 <span class="status-dot"></span>
                 {{ order.status }}
