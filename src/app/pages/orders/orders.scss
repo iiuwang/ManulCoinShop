@@ -124,15 +124,15 @@
   background: #8b5cf6;
 }
 
-.order-status[data-status='Сборка'] .status-dot {
+.order-status[data-status='assembly'] .status-dot {
   background: #f59e0b;
 }
 
-.order-status[data-status='В пути'] .status-dot {
+.order-status[data-status='in_transit'] .status-dot {
   background: #f65c76;
 }
 
-.order-status[data-status='Выдан'] .status-dot {
+.order-status[data-status='completed'] .status-dot {
   background: #10b981;
 }
 

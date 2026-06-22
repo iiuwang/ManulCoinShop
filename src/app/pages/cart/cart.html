@@ -1,34 +1,33 @@
 <app-header></app-header>
 <main class="page-content">
     <div>
-        <a class="back-link" routerLink="/catalog_products">Назад</a>
+        <a class="back-link" routerLink="/catalog_products">{{ 'cart.back' | translate }}</a>
     </div>
     <div class="cart-header">
-        <h3>Корзина</h3>
-        <!-- <h4>{{ itemsCount() }} товара</h4> -->
+        <h3>{{ 'cart.title' | translate }}</h3>
     </div>
 
     <div class="cart">
         @if (cartItems().length === 0) {
             <div class="empty-cart">
-                <p>Корзина пуста</p>
-                <a routerLink="/catalog_products">Перейти в каталог</a>
+                <p>{{ 'cart.empty' | translate }}</p>
+                <a routerLink="/catalog_products">{{ 'cart.goToCatalog' | translate }}</a>
             </div>
         }
         @else {
             <div class="products-list">
                 <div class="products-header">
-                    <span>Товар</span>
-                    <span>Количество</span>
-                    <span>Сумма</span>
+                    <span>{{ 'cart.product' | translate }}</span>
+                    <span>{{ 'cart.quantity' | translate }}</span>
+                    <span>{{ 'cart.price' | translate }}</span>
                 </div>
                 @for (item of cartItems(); track item.id) {
                     <div class="product-item">
                         <div class="product-info">
-                            <img [src]="item.product.image" [alt]="item.product.name">
+                            <img [src]="item.product.image" [alt]="item.product.name | translate">
                             <div class="product-text">
-                                <span class="product-name">{{ item.product.name }}</span>
-                                <span class="product-price">{{ item.product.price }} коинов</span>
+                                <span class="product-name">{{ item.product.name | translate }}</span>
+                                <span class="product-price">{{ item.product.price }} {{ 'common.coins' | translate }}</span>
                             </div>
                             <button mat-icon-button type="button" class="remove-btn" aria-label="Удалить товар" (click)="removeFromCart(item)">
                                 <mat-icon>close</mat-icon>
@@ -49,23 +48,20 @@
                         
                     </div>
                 }
-                <button mat-stroked-button class="clear-cart-btn" (click)="clearCart()">Очистить корзину</button>
+                <button mat-stroked-button class="clear-cart-btn" (click)="clearCart()">{{ 'cart.clearCart' | translate }}</button>
             </div>
             
             <aside class="total-price">
-                <h3>Итого</h3>
+                <h3>{{ 'cart.total' | translate }}</h3>
                 <div class="total-price__row">
-                    <span>Товаров: {{ itemsCount() }}</span>
-                    <!-- <span>{{ totalPrice() }} коинов</span> -->
+                    <span>{{ 'cart.itemsCount' | translate }}: {{ itemsCount() }}</span>
                 </div>
                 <div class="total-price__row total-price__row--total">
-                    <span>К оплате</span>
-                    <span class="total-price__value">{{ totalPrice() }} коинов</span>
+                    <span>{{ 'cart.toPay' | translate }}</span>
+                    <span class="total-price__value">{{ totalPrice() }} {{ 'common.coins' | translate }}</span>
                 </div>
-                <button mat-flat-button type="button" class="order-btn" (click)="checkout()">Оформить заказ</button>
-                @if (orderError()) {
-                    <div class="error-message">{{ orderError() }}</div>
-                }
+                <button mat-flat-button type="button" class="order-btn" (click)="checkout()">{{ 'cart.checkout' | translate }}</button>
+                
             </aside>
         }
         

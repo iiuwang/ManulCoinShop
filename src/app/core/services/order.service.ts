@@ -1,24 +1,24 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, of } from "rxjs";
+import { Observable, of, tap, map } from "rxjs";
 import { CartItem } from "../models/cart-item.interface";
-import { Order } from "../models/order.interface";
-import { tap } from "rxjs/operators";
+import { Order, OrderStatus } from "../models/order.interface";
 
 @Injectable({
     providedIn: 'root',
 })
 export class OrderService{
-    private readonly apiUrl = 'api/orders';
+    private readonly ordersUrl = 'api/orders';
+    private readonly createOrderUrl = 'api/order';
+    
     constructor(private readonly http: HttpClient) {}
 
-    // private orders: Order[] = [];
-    // private ordersSubject = new BehaviorSubject<Order[]>([]);
-    // public orders$ = this.ordersSubject.asObservable();
-    // private nextOrderId = 1;
-
     public getOrders(): Observable<Order[]>{
-        return of(this.getSavedOrders());
+        console.log('[API] → GET', this.ordersUrl);
+        return this.http.get<Order[]>(this.ordersUrl).pipe(
+            map((apiOrders) => this.mergeOrders(apiOrders, this.getSavedOrders())),
+            tap((orders) => console.log('[API] ← GET', this.ordersUrl, orders)),
+        );
     }
 
     public createOrder(cartItems: CartItem[]): Observable<Order | null>{
@@ -34,15 +34,27 @@ export class OrderService{
             date: new Date().toISOString().slice(0, 10),
             items: [...cartItems],
             total_price: totalPrice,
-            status: 'Сборка' as const
+            status: 'assembly' as const
         }
 
-        return this.http.post<Order>(this.apiUrl, newOrder).pipe(
-            tap(order => this.addOrderToStorage(order))
-          );
-        // this.orders.push(newOrder);
-        // this.ordersSubject.next([...this.orders]);
+        console.log('[API] → POST', this.createOrderUrl, newOrder);
+        return this.http.post<Order>(this.createOrderUrl, newOrder).pipe(
+            tap((order) => {console.log('[API] ← POST', this.createOrderUrl, order);
+            this.addOrderToStorage(order);
+        }),
+        );
     }
+
+    private mergeOrders(apiOrders: Order[], savedOrders: Order[]): Order[] {
+        const merged = [...apiOrders];
+        for (const savedOrder of savedOrders) {
+          const alreadyExists = merged.some((order) => order.id === savedOrder.id);
+          if (!alreadyExists) {
+            merged.push(savedOrder);
+          }
+        }
+        return merged;
+      }
 
     private getSavedOrders(): Order[] {
         const savedOrders = localStorage.getItem('orders');

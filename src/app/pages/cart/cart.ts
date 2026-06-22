@@ -8,10 +8,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { CartService } from '../../core/services/cart.service';
 import { OrderService } from '../../core/services/order.service';
 import { Header } from '../../shared/components/header/header';
+import { NotificationService } from '../../core/services/notification.service';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-cart',
-  imports: [Header, RouterLink, MatIconModule, MatButtonModule],
+  imports: [Header, RouterLink, MatIconModule, MatButtonModule, TranslatePipe],
   templateUrl: './cart.html',
   styleUrl: './cart.scss',
 })
@@ -20,7 +22,7 @@ export class Cart {
   private readonly orderService = inject(OrderService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
-
+  private readonly notification = inject(NotificationService);
   protected readonly cartItems = toSignal(this.cartService.cartItems$, { initialValue: [] });
   protected readonly itemsCount = computed(() =>
     this.cartItems().reduce((total, item) => total + item.quantity, 0),
@@ -28,7 +30,6 @@ export class Cart {
   protected readonly totalPrice = computed(() =>
     this.cartItems().reduce((total, item) => total + item.product.price * item.quantity, 0),
   );
-  protected readonly orderError = signal('');
   
   protected increaseQuantity(item: CartItem): void {
     this.cartService.changeQuantity(item, item.quantity + 1);
@@ -47,24 +48,24 @@ export class Cart {
   }
 
   protected checkout(): void {
-    this.orderError.set('');
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) return;
 
     const totalPrice = this.cartService.getTotalPrice();
     if (currentUser.balance < totalPrice) {
-      this.orderError.set('Недостаточно средств');
+      this.notification.showError('cart.notEnoughMoney');
       return;
     }
     this.orderService.createOrder(this.cartService.getCartItems()).subscribe({
       next: (order) => {
-        if (!order) return; // пустая корзина
+        if (!order) return; 
         this.cartService.clearCart();
         this.authService.updateBalance(currentUser.balance - totalPrice);
+        this.notification.showSuccess('cart.orderSuccess');
         this.router.navigate(['/orders']);
       },
       error: () => {
-        this.orderError.set('Не удалось оформить заказ');
+        this.notification.showError('cart.orderError');
       },
     })
 

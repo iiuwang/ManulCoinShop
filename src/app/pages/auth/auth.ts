@@ -7,14 +7,17 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'app-auth',
-  imports: [ReactiveFormsModule, MatCardModule,MatFormFieldModule,MatInputModule,MatButtonModule],
+  imports: [ReactiveFormsModule, MatCardModule,MatFormFieldModule,MatInputModule,MatButtonModule, TranslatePipe],
   styleUrl: './auth.scss',
   templateUrl: './auth.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Auth {
+  private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
   protected readonly loginError = signal<string>('');
@@ -36,13 +39,14 @@ export class Auth {
 
     console.log(login, password);
     this.authService.login({login, password}).subscribe((isLoggedIn)=>{
-      console.log(isLoggedIn);
       if (isLoggedIn) {
         
         this.router.navigate(['/catalog_products']);
       } 
       else {
-        this.loginError.set('Неверный логин или пароль');
+        this.translate.get('auth.loginError').subscribe(text => {
+          this.loginError.set(text);
+        });
         this.form.reset();
       }
     });
