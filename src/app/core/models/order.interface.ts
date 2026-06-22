@@ -5,6 +5,8 @@ export interface Order{
     date: string;
     items: CartItem[];
     total_price: number;
-    status: 'Сборка'|'В пути'|'Выдан';
+    status: OrderStatus;
     
 }
+
+export type OrderStatus = 'assembly' | 'in_transit' | 'completed';

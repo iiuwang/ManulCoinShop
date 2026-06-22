@@ -66,3 +66,27 @@
   .logout-button:hover {
     color: black;
   }
+
+  .lang-toggle {
+    height: 34px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.16);
+  }
+  .lang-toggle ::ng-deep .mat-button-toggle {
+    height: 34px;
+  }
+  
+  .lang-toggle ::ng-deep .mat-button-toggle-button {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    line-height: 1;
+  }
+  
+  .lang-toggle ::ng-deep .mat-button-toggle-label-content {
+    line-height: 1;
+    padding: 0;
+  }

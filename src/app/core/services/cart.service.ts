@@ -11,7 +11,7 @@ export class CartService{
     private cartItems: CartItem[] = this.getSavedCartItems();
     private cartItemsSubject = new BehaviorSubject<CartItem[]>(this.cartItems);
     public cartItems$ = this.cartItemsSubject.asObservable();
-    private nextCartItemId = 0;
+    private nextCartItemId = this.getNextCartItemId(this.cartItems);
 
     private getSavedCartItems(): CartItem[] {
         const savedCartItems = localStorage.getItem('cartItems');
@@ -19,7 +19,14 @@ export class CartService{
           return [];
         }
         return JSON.parse(savedCartItems);
+    }
+
+    private getNextCartItemId(items: CartItem[]): number {
+      if (items.length === 0) {
+        return 0;
       }
+      return Math.max(...items.map(item => item.id)) + 1;
+    }
 
     public addToCart(product: Product): void{
         const productItem = this.cartItems.find(item => item.product.id === product.id)
