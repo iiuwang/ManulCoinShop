@@ -1,108 +1,128 @@
 <app-header></app-header>
 <main class="page-content">
-  <div>
-    <a class="back-link" routerLink="/catalog_products">{{ 'orders.back' | translate }}</a>
-  </div>
+    <div>
+        <a class="back-link" routerLink="/catalog_products">{{ 'orders.back' | translate }}</a>
+    </div>
 
-  <div class="orders-page-header">
-    <h3>{{ 'orders.title' | translate }}</h3>
-  </div>
-  @if (!isLoading()) {
+    <div class="orders-page-header">
+        <h3>{{ 'orders.title' | translate }}</h3>
+    </div>
+    @if (!isLoading()) {
+        <div class="orders-filters">
+            @for (filter of filters(); track filter.id) {
+                @if (activeFilter() === filter.id) {
+                    <button
+                        mat-flat-button
+                        color="primary"
+                        type="button"
+                        (click)="activeFilter.set(filter.id)"
+                    >
+                        {{ filter.labelKey | translate }} {{ filter.count }}
+                    </button>
+                } @else {
+                    <button mat-stroked-button type="button" (click)="activeFilter.set(filter.id)">
+                        {{ filter.labelKey | translate }} {{ filter.count }}
+                    </button>
+                }
+            }
+        </div>
+    }
+    <div class="orders-list">
+        @if (isLoading()) {
+            <div class="loader">
+                <mat-progress-spinner diameter="48" mode="indeterminate"></mat-progress-spinner>
+            </div>
+        } @else if (filteredOrders().length === 0) {
+            <div class="empty-orders">
+                <p>{{ 'orders.noOrders' | translate }}</p>
+                <a routerLink="/catalog_products">{{ 'orders.goToCatalog' | translate }}</a>
+            </div>
+        } @else {
+            @for (order of filteredOrders(); track order.id) {
+                <mat-card
+                    class="order-card"
+                    [class.order-card--expanded]="expandedOrderId() === order.id"
+                >
+                    <mat-card-header
+                        type="button"
+                        class="order-card-header"
+                        (click)="toggleOrder(order.id)"
+                    >
+                        <div class="order-card-meta">
+                            <div class="order-meta-row">
+                                <span class="order-id">
+                                    {{ 'orders.orderId' | translate }} - {{ order.id }}</span
+                                >
+                                <span class="order-date">{{ order.date.split('T')[0] }}</span>
+                                <span class="order-status" [attr.data-status]="order.status">
+                                    <span class="status-dot"></span>
+                                    {{ statusKey(order.status) | translate }}
+                                </span>
+                            </div>
+                        </div>
 
+                        <div class="order-card-summary">
+                            <span class="order-total"
+                                >{{ order.total_price | number }}
+                                {{ 'common.coins' | translate }}</span
+                            >
+                            <span class="order-items-count"
+                                >{{ 'orders.orderCount' | translate }}:
+                                {{ itemsCount(order) }}</span
+                            >
+                        </div>
 
-    <div class="orders-filters">
-      @for (filter of filters(); track filter.id) {
-          @if (activeFilter() === filter.id) {
-            <button
-              mat-flat-button
-              color="primary"
-              type="button"
-              (click)="activeFilter.set(filter.id)"
-            >
-              {{ filter.labelKey | translate }} {{ filter.count }}
-            </button>
-          } @else {
-            <button
-              mat-stroked-button
-              type="button"
-              (click)="activeFilter.set(filter.id)"
-            >
-              {{ filter.labelKey | translate }} {{ filter.count }}
-            </button>
-          }
+                        <mat-icon class="order-card-chevron">
+                            {{ expandedOrderId() === order.id ? 'expand_less' : 'expand_more' }}
+                        </mat-icon>
+                    </mat-card-header>
+
+                    @if (expandedOrderId() === order.id) {
+                        <div class="order-card-details">
+                            <div class="order-products-header">
+                                <span>{{ 'orders.product' | translate }}</span>
+                                <span>{{ 'orders.quantity' | translate }}</span>
+                                <span>{{ 'orders.price' | translate }}</span>
+                            </div>
+
+                            @for (item of order.items; track item.id) {
+                                <div class="order-product">
+                                    <div class="order-product-info">
+                                        <img
+                                            [src]="item.product.image"
+                                            [alt]="item.product.name | translate"
+                                        />
+                                        <div class="order-product-text">
+                                            <span class="order-product-brand">MANUL COIN SHOP</span>
+                                            <span class="order-product-name">{{
+                                                item.product.name | translate
+                                            }}</span>
+                                        </div>
+                                    </div>
+                                    <span class="order-product-qty"
+                                        >{{ item.quantity }}
+                                        {{ 'orders.itemsCount' | translate }}.</span
+                                    >
+                                    <span class="order-product-price"
+                                        >{{ item.product.price * item.quantity | number }}
+                                        {{ 'common.coins' | translate }}</span
+                                    >
+                                </div>
+                            }
+
+                            <div class="order-card-footer">
+                                <span
+                                    >{{ 'orders.total' | translate }}:
+                                    <strong
+                                        >{{ order.total_price | number }}
+                                        {{ 'common.coins' | translate }}</strong
+                                    ></span
+                                >
+                            </div>
+                        </div>
+                    }
+                </mat-card>
+            }
         }
     </div>
-  }
-  <div class="orders-list">
-    @if (isLoading()) {
-        <div class="loader">
-            <mat-progress-spinner diameter="48" mode="indeterminate"></mat-progress-spinner>
-        </div>
-    }@else if(filteredOrders().length === 0) {
-        <div class="empty-orders">
-            <p>{{ 'orders.noOrders' | translate }}</p>
-            <a routerLink="/catalog_products">{{ 'orders.goToCatalog' | translate }}</a>
-        </div>
-    }
-    @else {
-    @for (order of filteredOrders(); track order.id) {
-      <mat-card class="order-card" [class.order-card--expanded]="expandedOrderId() === order.id">
-        <mat-card-header
-          type="button"
-          class="order-card-header"
-          (click)="toggleOrder(order.id)"
-        >
-
-          <div class="order-card-meta">
-            <div class="order-meta-row">
-              <span class="order-id"> {{ 'orders.orderId' | translate }} - {{ order.id }}</span>
-              <span class="order-date">{{ order.date.split('T')[0] }}</span>
-              <span class="order-status" [attr.data-status]="order.status">
-                <span class="status-dot"></span>
-                {{ statusKey(order.status) | translate }}
-              </span>
-            </div>
-          </div>
-
-          <div class="order-card-summary">
-            <span class="order-total">{{ order.total_price | number }} {{ 'common.coins' | translate }}</span>
-            <span class="order-items-count">{{ 'orders.orderCount' | translate }}: {{ itemsCount(order) }}</span>
-          </div>
-
-          <mat-icon class="order-card-chevron">
-            {{ expandedOrderId() === order.id ? 'expand_less' : 'expand_more' }}
-          </mat-icon>
-        </mat-card-header>
-
-        @if (expandedOrderId() === order.id) {
-          <div class="order-card-details">
-            <div class="order-products-header">
-              <span>{{ 'orders.product' | translate }}</span>
-              <span>{{ 'orders.quantity' | translate }}</span>
-              <span>{{ 'orders.price' | translate }}</span>
-            </div>
-
-            @for (item of order.items; track item.id) {
-              <div class="order-product">
-                <div class="order-product-info">
-                  <img [src]="item.product.image" [alt]="item.product.name | translate" />
-                  <div class="order-product-text">
-                    <span class="order-product-brand">MANUL COIN SHOP</span>
-                    <span class="order-product-name">{{ item.product.name | translate }}</span>
-                  </div>
-                </div>
-                <span class="order-product-qty">{{ item.quantity }} {{ 'orders.itemsCount' | translate }}.</span>
-                <span class="order-product-price">{{ item.product.price * item.quantity | number }} {{ 'common.coins' | translate }}</span>
-              </div>
-            }
-
-            <div class="order-card-footer">
-              <span>{{ 'orders.total' | translate }}: <strong>{{ order.total_price | number }} {{ 'common.coins' | translate }}</strong></span>
-            </div>
-          </div>
-        }
-      </mat-card>
-    }
-    }
-  </div>
 </main>

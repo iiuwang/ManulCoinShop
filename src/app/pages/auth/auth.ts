@@ -10,46 +10,52 @@ import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TranslateService } from '@ngx-translate/core';
 @Component({
-  selector: 'app-auth',
-  imports: [ReactiveFormsModule, MatCardModule,MatFormFieldModule,MatInputModule,MatButtonModule, TranslatePipe],
-  styleUrl: './auth.scss',
-  templateUrl: './auth.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-auth',
+    imports: [
+        ReactiveFormsModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule,
+        TranslatePipe,
+    ],
+    styleUrl: './auth.scss',
+    templateUrl: './auth.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Auth {
-  private readonly translate = inject(TranslateService);
-  private readonly router = inject(Router);
-  private readonly authService = inject(AuthService);
-  protected readonly loginError = signal<string>('');
+    private readonly translate = inject(TranslateService);
+    private readonly router = inject(Router);
+    private readonly authService = inject(AuthService);
+    protected readonly loginError = signal<string>('');
 
-  form = new FormGroup({
-    
-    login: new FormControl('',{nonNullable: true,validators: [Validators.required, Validators.minLength(10)]}),
-    password: new FormControl('', {nonNullable: true,validators: [Validators.required, Validators.minLength(10)]}),
-  });
-
-  protected onSubmit(){
-    if (this.form.invalid){
-      this.form.markAllAsTouched();
-      return;
-    }
-    this.loginError.set('');
-    const login = this.form.get('login')?.value ?? '';
-    const password = this.form.get('password')?.value ?? '';
-
-    console.log(login, password);
-    this.authService.login({login, password}).subscribe((isLoggedIn)=>{
-      if (isLoggedIn) {
-        
-        this.router.navigate(['/catalog_products']);
-      } 
-      else {
-        this.translate.get('auth.loginError').subscribe(text => {
-          this.loginError.set(text);
-        });
-        this.form.reset();
-      }
+    protected readonly form = new FormGroup({
+        login: new FormControl('', {
+            nonNullable: true,
+            validators: [Validators.required, Validators.minLength(10)],
+        }),
+        password: new FormControl('', {
+            nonNullable: true,
+            validators: [Validators.required, Validators.minLength(10)],
+        }),
     });
 
-  }
+    protected onSubmit() {
+        if (this.form.invalid) {
+            this.form.markAllAsTouched();
+            return;
+        }
+        this.loginError.set('');
+        const login = this.form.get('login')?.value ?? '';
+        const password = this.form.get('password')?.value ?? '';
+
+        this.authService.login({ login, password }).subscribe((isLoggedIn) => {
+            if (isLoggedIn) {
+                this.router.navigate(['/catalog_products']);
+            } else {
+                this.loginError.set(this.translate.instant('auth.loginError'));
+                this.form.reset();
+            }
+        });
+    }
 }

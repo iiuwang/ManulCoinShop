@@ -13,8 +13,7 @@
                 <p>{{ 'cart.empty' | translate }}</p>
                 <a routerLink="/catalog_products">{{ 'cart.goToCatalog' | translate }}</a>
             </div>
-        }
-        @else {
+        } @else {
             <div class="products-list">
                 <div class="products-header">
                     <span>{{ 'cart.product' | translate }}</span>
@@ -24,12 +23,22 @@
                 @for (item of cartItems(); track item.id) {
                     <div class="product-item">
                         <div class="product-info">
-                            <img [src]="item.product.image" [alt]="item.product.name | translate">
+                            <img [src]="item.product.image" [alt]="item.product.name | translate" />
                             <div class="product-text">
-                                <span class="product-name">{{ item.product.name | translate }}</span>
-                                <span class="product-price">{{ item.product.price }} {{ 'common.coins' | translate }}</span>
+                                <span class="product-name">{{
+                                    item.product.name | translate
+                                }}</span>
+                                <span class="product-price"
+                                    >{{ item.product.price }} {{ 'common.coins' | translate }}</span
+                                >
                             </div>
-                            <button mat-icon-button type="button" class="remove-btn" aria-label="Удалить товар" (click)="removeFromCart(item)">
+                            <button
+                                mat-icon-button
+                                type="button"
+                                class="remove-btn"
+                                aria-label="Удалить товар"
+                                (click)="removeFromCart(item)"
+                            >
                                 <mat-icon>close</mat-icon>
                             </button>
                         </div>
@@ -37,20 +46,21 @@
                             <button mat-icon-button (click)="decreaseQuantity(item)">
                                 <mat-icon>remove</mat-icon>
                             </button>
-                            <span>{{item.quantity}}</span>
+                            <span>{{ item.quantity }}</span>
                             <button mat-icon-button (click)="increaseQuantity(item)">
                                 <mat-icon>add</mat-icon>
                             </button>
                         </div>
                         <div class="products-price">
-                            <span>{{item.product.price * item.quantity}}</span>
+                            <span>{{ item.product.price * item.quantity }}</span>
                         </div>
-                        
                     </div>
                 }
-                <button mat-stroked-button class="clear-cart-btn" (click)="clearCart()">{{ 'cart.clearCart' | translate }}</button>
+                <button mat-stroked-button class="clear-cart-btn" (click)="clearCart()">
+                    {{ 'cart.clearCart' | translate }}
+                </button>
             </div>
-            
+
             <aside class="total-price">
                 <h3>{{ 'cart.total' | translate }}</h3>
                 <div class="total-price__row">
@@ -58,13 +68,14 @@
                 </div>
                 <div class="total-price__row total-price__row--total">
                     <span>{{ 'cart.toPay' | translate }}</span>
-                    <span class="total-price__value">{{ totalPrice() }} {{ 'common.coins' | translate }}</span>
+                    <span class="total-price__value"
+                        >{{ totalPrice() }} {{ 'common.coins' | translate }}</span
+                    >
                 </div>
-                <button mat-flat-button type="button" class="order-btn" (click)="checkout()">{{ 'cart.checkout' | translate }}</button>
-                
+                <button mat-flat-button type="button" class="order-btn" (click)="checkout()">
+                    {{ 'cart.checkout' | translate }}
+                </button>
             </aside>
         }
-        
     </div>
-    
 </main>

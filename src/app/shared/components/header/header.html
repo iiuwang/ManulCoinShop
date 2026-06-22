@@ -1,33 +1,50 @@
 <header>
     <div class="container">
-      <nav class="header">
-        <div class="logo">Manul Coin Shop</div>
-  
+        <nav class="header">
+            <div class="logo">Manul Coin Shop</div>
+
             <ul class="menu">
                 <li class="user-info">
                     <span class="user-name">
-                        {{currentUser()?.name}}
+                        {{ currentUser()?.name }}
                     </span>
 
                     <span class="balance">
-                        {{currentUser()?.balance}} {{ 'common.coins' | translate }}
+                        {{ currentUser()?.balance }} {{ 'common.coins' | translate }}
                     </span>
                 </li>
-        
+
                 <li>
-                    <button mat-icon-button routerLink="/orders" class="icon" type="button" aria-label="Заказы">
-                    <mat-icon>receipt_long</mat-icon>
-                    </button>
-                </li>
-        
-                <li>
-                    <button mat-icon-button class="icon" routerLink="/cart" type="button" aria-label="Корзина">
-                    <mat-icon>shopping_cart</mat-icon>
+                    <button
+                        mat-icon-button
+                        routerLink="/orders"
+                        class="icon"
+                        type="button"
+                        aria-label="Заказы"
+                    >
+                        <mat-icon>receipt_long</mat-icon>
                     </button>
                 </li>
 
                 <li>
-                    <mat-button-toggle-group class="lang-toggle" [value]="currentLang()" (change)="switchLang($event.value)" hideSingleSelectionIndicator>
+                    <button
+                        mat-icon-button
+                        class="icon"
+                        routerLink="/cart"
+                        type="button"
+                        aria-label="Корзина"
+                    >
+                        <mat-icon>shopping_cart</mat-icon>
+                    </button>
+                </li>
+
+                <li>
+                    <mat-button-toggle-group
+                        class="lang-toggle"
+                        [value]="currentLang()"
+                        (change)="switchLang($event.value)"
+                        hideSingleSelectionIndicator
+                    >
                         <mat-button-toggle value="ru">RU</mat-button-toggle>
                         <mat-button-toggle value="en">EN</mat-button-toggle>
                     </mat-button-toggle-group>
@@ -37,8 +54,7 @@
                         {{ 'header.logout' | translate }}
                     </button>
                 </li>
-
             </ul>
-      </nav>
+        </nav>
     </div>
-  </header>  
+</header>
