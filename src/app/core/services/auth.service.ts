@@ -1,22 +1,20 @@
-import { Injectable } from "@angular/core";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { LoginData } from "../models/login-data.interface";
-import { User } from "../models/user.interface";
-import {Observable, BehaviorSubject, map, catchError,of,tap} from "rxjs";
-
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { LoginData } from '../models/login-data.interface';
+import { User } from '../models/user.interface';
+import { Observable, BehaviorSubject, map, catchError, of, tap } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
 })
-export class AuthService{
-
+export class AuthService {
     private readonly loginUrl = 'api/auth/login';
     private readonly userUrl = 'api/user';
 
     private currentUserSubject = new BehaviorSubject<User | null>(this.getSavedUser());
     public currentUser$ = this.currentUserSubject.asObservable();
-    
-    constructor(private readonly http: HttpClient){}
+
+    private readonly http = inject(HttpClient);
 
     private balanceKey(userId: number): string {
         return `userBalance_${userId}`;
@@ -25,7 +23,7 @@ export class AuthService{
     private applySavedBalance(user: User): User {
         const savedBalance = localStorage.getItem(this.balanceKey(user.id));
         if (savedBalance === null) {
-          return user;
+            return user;
         }
         return { ...user, balance: Number(savedBalance) };
     }
@@ -38,24 +36,21 @@ export class AuthService{
 
     private getSavedUser(): User | null {
         const savedUser = localStorage.getItem('currentUser');
-      
+
         if (!savedUser) {
-          return null;
+            return null;
         }
-      
+
         return this.applySavedBalance(JSON.parse(savedUser));
     }
 
-    public login(data: LoginData): Observable<boolean>{
-        console.log('[API] → POST', this.loginUrl, data);
+    public login(data: LoginData): Observable<boolean> {
         return this.http.post<User>(this.loginUrl, data).pipe(
-            map((user) =>{
-                console.log('[API] ← POST', this.loginUrl, user);
+            map((user) => {
                 this.saveUser(this.applySavedBalance(user));
                 return true;
             }),
-            catchError((error) => {
-                console.log('[API] ✗ POST', this.loginUrl, error);
+            catchError(() => {
                 return of(false);
             }),
         );
@@ -64,31 +59,27 @@ export class AuthService{
     public getUser(): Observable<User | null> {
         const savedUser = this.getSavedUser();
         if (!savedUser) {
-          console.log('[API] skip GET', this.userUrl, '(не залогинен)');
-          return of(null);
+            return of(null);
         }
         const headers = new HttpHeaders({
-          'X-User-Id': String(savedUser.id),
+            'X-User-Id': String(savedUser.id),
         });
-        console.log('[API] → GET', this.userUrl, { 'X-User-Id': savedUser.id });
         return this.http.get<User>(this.userUrl, { headers }).pipe(
-          tap((user) => {
-            console.log('[API] ← GET', this.userUrl, user);
-            this.saveUser(this.applySavedBalance(user));
-          }),
-          catchError((error) => {
-            console.log('[API] ✗ GET', this.userUrl, error);
-            return of(null);
-          }),
+            tap((user) => {
+                this.saveUser(this.applySavedBalance(user));
+            }),
+            catchError(() => {
+                return of(null);
+            }),
         );
     }
 
-    public logout(): void{
+    public logout(): void {
         localStorage.removeItem('currentUser');
         this.currentUserSubject.next(null);
     }
-    
-    public getCurrentUser(): User | null{
+
+    public getCurrentUser(): User | null {
         return this.currentUserSubject.value;
     }
 
@@ -96,6 +87,5 @@ export class AuthService{
         const user = this.getCurrentUser();
         if (!user) return;
         this.saveUser({ ...user, balance: newBalance });
-      }
-
+    }
 }

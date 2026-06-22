@@ -1,4 +1,4 @@
-export interface  LoginData{
+export interface LoginData {
     login: string;
     password: string;
 }

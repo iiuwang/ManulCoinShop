@@ -1,70 +1,70 @@
-.products_container {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));   
-  align-items: stretch;
-  grid-gap: 60px 20px;
+.products-container {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
+    grid-gap: 60px 20px;
 }
-.container{
-  display: flex;
-  flex-direction: column;
-}
-
-.product_card {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 16px;
-  overflow: hidden;
-  padding: 0;
-  background-color: white;
+.container {
+    display: flex;
+    flex-direction: column;
 }
 
-.product_card img {
-  width: 100%;
-  height: 240px;
-  object-fit: cover;
-  display: block;
+.product-card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    padding: 0;
+    background-color: white;
 }
 
-.product_card h4,
-.product_card p,
-.product_card button {
-  margin-left: 16px;
-  margin-right: 16px;
+.product-card img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    display: block;
+}
+
+.product-card h4,
+.product-card p,
+.product-card button {
+    margin-left: 16px;
+    margin-right: 16px;
 }
 
 .add-cart-button {
-  width: calc(100% - 32px);
-  margin: 0 16px 16px;
-  background-color: var(--mat-sys-primary);
-  color: white;
-  }
+    width: calc(100% - 32px);
+    margin: 0 16px 16px;
+    background-color: var(--mat-sys-primary);
+    color: white;
+}
 
 .quantity {
-  width: calc(100% - 32px);
-  margin: 0 16px 16px;
-  height: 40px;
-  border-radius: 20px;
-  background-color: var(--mat-sys-primary);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
+    width: calc(100% - 32px);
+    margin: 0 16px 16px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: var(--mat-sys-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
 }
-  
+
 .quantity button {
-  color: white;
+    color: white;
 }
-  
+
 .quantity span {
-  min-width: 24px;
-  text-align: center;
-  font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+    font-weight: 600;
 }
 
 .paginator {
-  margin-top: 40px;
-  border-radius: 16px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+    margin-top: 40px;
+    border-radius: 16px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }

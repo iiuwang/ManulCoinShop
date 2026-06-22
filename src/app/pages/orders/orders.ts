@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -6,63 +6,90 @@ import { MatIconModule } from '@angular/material/icon';
 import { Header } from '../../shared/components/header/header';
 import { OrderService } from '../../core/services/order.service';
 import { Order, OrderStatus } from '../../core/models/order.interface';
-import {MatButtonModule} from '@angular/material/button';
-import {MatCardModule} from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { TranslatePipe } from '@ngx-translate/core';
 import { finalize } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
-  selector: 'app-orders',
-  imports: [Header, RouterLink, MatIconModule, DecimalPipe, MatButtonModule, MatCardModule, TranslatePipe, MatProgressSpinnerModule],
-  templateUrl: './orders.html',
-  styleUrl: './orders.scss',
+    selector: 'app-orders',
+    imports: [
+        Header,
+        RouterLink,
+        MatIconModule,
+        DecimalPipe,
+        MatButtonModule,
+        MatCardModule,
+        TranslatePipe,
+        MatProgressSpinnerModule,
+    ],
+    templateUrl: './orders.html',
+    styleUrl: './orders.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Orders {
-  private readonly orderService = inject(OrderService);
-  protected readonly expandedOrderId = signal<number | null>(null);
+    private readonly orderService = inject(OrderService);
+    protected readonly expandedOrderId = signal<number | null>(null);
 
-  protected readonly isLoading = signal(true);
-  protected readonly orders = toSignal(this.orderService.getOrders().pipe(finalize(() => this.isLoading.set(false))), { initialValue: [] });
+    protected readonly isLoading = signal(true);
+    protected readonly orders = toSignal(
+        this.orderService.getOrders().pipe(finalize(() => this.isLoading.set(false))),
+        { initialValue: [] },
+    );
 
-  protected  itemsCount(order: Order): number {
-    return order.items.reduce((sum, item) => sum + item.quantity, 0);
-  }
-
-  protected toggleOrder(id: number): void {
-    if (this.expandedOrderId() === id) {
-      this.expandedOrderId.set(null);
-    } else {
-      this.expandedOrderId.set(id);
+    protected itemsCount(order: Order): number {
+        return order.items.reduce((sum, item) => sum + item.quantity, 0);
     }
-  }
 
-  activeFilter = signal<'all' | OrderStatus>('all');
-  
-  protected readonly filteredOrders = computed(() =>{
-    const all = this.orders();
-    if(this.activeFilter() ==='all'){
-      return all;
+    protected toggleOrder(id: number): void {
+        if (this.expandedOrderId() === id) {
+            this.expandedOrderId.set(null);
+        } else {
+            this.expandedOrderId.set(id);
+        }
     }
-    return all.filter(order => order.status === this.activeFilter());
-  });
 
-  protected statusKey(status: OrderStatus): string {
-    switch (status) {
-      case 'assembly': return 'orders.assembly';
-      case 'in_transit': return 'orders.in_transit';
-      case 'completed': return 'orders.completed';
+    protected readonly activeFilter = signal<'all' | OrderStatus>('all');
+
+    protected readonly filteredOrders = computed(() => {
+        const all = this.orders();
+        if (this.activeFilter() === 'all') {
+            return all;
+        }
+        return all.filter((order) => order.status === this.activeFilter());
+    });
+
+    protected statusKey(status: OrderStatus): string {
+        switch (status) {
+            case 'assembly':
+                return 'orders.assembly';
+            case 'in_transit':
+                return 'orders.in_transit';
+            case 'completed':
+                return 'orders.completed';
+        }
     }
-  }
 
-  protected readonly filters = computed(() => {
-    const all = this.orders();
-    return [
-      { id: 'all' as const,    labelKey: 'orders.allOrders', count: all.length },
-      { id: 'assembly' as const, labelKey: 'orders.assembly', count: all.filter(o => o.status === 'assembly').length },
-      { id: 'in_transit' as const, labelKey: 'orders.in_transit', count: all.filter(o => o.status === 'in_transit').length },
-      { id: 'completed' as const, labelKey: 'orders.completed', count: all.filter(o => o.status === 'completed').length },
-    ];
-  });
-    
+    protected readonly filters = computed(() => {
+        const all = this.orders();
+        return [
+            { id: 'all' as const, labelKey: 'orders.allOrders', count: all.length },
+            {
+                id: 'assembly' as const,
+                labelKey: 'orders.assembly',
+                count: all.filter((o) => o.status === 'assembly').length,
+            },
+            {
+                id: 'in_transit' as const,
+                labelKey: 'orders.in_transit',
+                count: all.filter((o) => o.status === 'in_transit').length,
+            },
+            {
+                id: 'completed' as const,
+                labelKey: 'orders.completed',
+                count: all.filter((o) => o.status === 'completed').length,
+            },
+        ];
+    });
 }

@@ -1,59 +1,78 @@
 <app-header></app-header>
 <main class="page-content">
     <div class="container">
-            <section class="catalog-header">
-                <h3>{{ 'catalog.title' | translate }}</h3>
-                <h4>{{ products().length }} {{ 'catalog.product' | translate }}</h4>
-                <mat-form-field>
-                    <mat-select [value]="typeSort()" (selectionChange)="onSortChange($event)" name="sort" id="sort-select">
-                        <mat-option value="default">{{ 'catalog.sortBy' | translate }}</mat-option>
-                        <mat-option value="asc">{{ 'catalog.sortByPriceAsc' | translate }}</mat-option>
-                        <mat-option value="desc">{{ 'catalog.sortByPriceDesc' | translate }}</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </section>
-            
-            @if (isLoading()) {
-                <div class="loader">
-                    <mat-spinner diameter="48"></mat-spinner>
-                </div>
-            }@else if(products().length === 0) {
-                <p>{{ 'catalog.noProducts' | translate }}</p>
-            } @else {
-                <div class="products_container">
-                    @for (product of pagedProducts(); track product.id) {
-                        <section class="product_card">
-                            <img [src]="product.image" [alt]="product.name | translate" />
-                            <h4>{{ product.name | translate }}</h4>
-                            <p>{{ product.price }} {{ 'common.coins' | translate }}</p>
-                            @if (getCartItem(product, cartItems()); as cartItem){
-                                <div class="quantity">
-                                    <button mat-icon-button type="button"  (click)="decreaseQuantity(cartItem)">
-                                        <mat-icon>remove</mat-icon>
-                                    </button>
-                                    <span>{{ cartItem.quantity }}</span>
-                                    <button mat-icon-button type="button" (click)="increaseQuantity(cartItem)">
-                                        <mat-icon>add</mat-icon>
-                                     </button>
-                                </div>
-                                
-                            
-                        } @else {
-                            <button mat-flat-button class="add-cart-button" type="button" (click)="addToCart(product)"><mat-icon>add</mat-icon>{{ 'catalog.addToCart' | translate }}</button>
-                        }
-                        
-                    </section> 
-                    }
-                </div>
-                }
-                <mat-paginator class="paginator"
-                    [length]="sortedProducts().length"
-                    [pageSize]="pageSize()"
-                    [pageIndex]="pageIndex()"
-                    [pageSizeOptions]="[8, 12, 16]"
-                    (page)="onPageChange($event)">
-                </mat-paginator>
-                
+        <section class="catalog-header">
+            <h3>{{ 'catalog.title' | translate }}</h3>
+            <h4>{{ products().length }} {{ 'catalog.product' | translate }}</h4>
+            <mat-form-field>
+                <mat-select
+                    [value]="typeSort()"
+                    (selectionChange)="onSortChange($event)"
+                    name="sort"
+                    id="sort-select"
+                >
+                    <mat-option value="default">{{ 'catalog.sortBy' | translate }}</mat-option>
+                    <mat-option value="asc">{{ 'catalog.sortByPriceAsc' | translate }}</mat-option>
+                    <mat-option value="desc">{{
+                        'catalog.sortByPriceDesc' | translate
+                    }}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </section>
 
+        @if (isLoading()) {
+            <div class="loader">
+                <mat-progress-spinner diameter="48" mode="indeterminate"></mat-progress-spinner>
+            </div>
+        } @else if (products().length === 0) {
+            <p>{{ 'catalog.noProducts' | translate }}</p>
+        } @else {
+            <div class="products-container">
+                @for (product of pagedProducts(); track product.id) {
+                    <section class="product-card">
+                        <img [src]="product.image" [alt]="product.name | translate" />
+                        <h4>{{ product.name | translate }}</h4>
+                        <p>{{ product.price }} {{ 'common.coins' | translate }}</p>
+                        @if (getCartItem(product, cartItems()); as cartItem) {
+                            <div class="quantity">
+                                <button
+                                    mat-icon-button
+                                    type="button"
+                                    (click)="decreaseQuantity(cartItem)"
+                                >
+                                    <mat-icon>remove</mat-icon>
+                                </button>
+                                <span>{{ cartItem.quantity }}</span>
+                                <button
+                                    mat-icon-button
+                                    type="button"
+                                    (click)="increaseQuantity(cartItem)"
+                                >
+                                    <mat-icon>add</mat-icon>
+                                </button>
+                            </div>
+                        } @else {
+                            <button
+                                mat-flat-button
+                                class="add-cart-button"
+                                type="button"
+                                (click)="addToCart(product)"
+                            >
+                                <mat-icon>add</mat-icon>{{ 'catalog.addToCart' | translate }}
+                            </button>
+                        }
+                    </section>
+                }
+            </div>
+        }
+        <mat-paginator
+            class="paginator"
+            [length]="sortedProducts().length"
+            [pageSize]="pageSize()"
+            [pageIndex]="pageIndex()"
+            [pageSizeOptions]="[8, 12, 16]"
+            (page)="onPageChange($event)"
+        >
+        </mat-paginator>
     </div>
 </main>
