@@ -1,27 +1,38 @@
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { Observable, of } from "rxjs";
-import { CartItem } from "../models/cart-item.interface";
-import { Order } from "../models/order.interface";
-
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders} from '@angular/common/http';
+import { Observable, of, tap, map } from 'rxjs';
+import { CartItem } from '../models/cart-item.interface';
+import { Order, OrderStatus } from '../models/order.interface';
+import { AuthService } from './auth.service';
+import { StorageService, STORAGE_KEYS } from './storage.service';
 @Injectable({
     providedIn: 'root',
 })
-export class OrderService{
-    private readonly apiUrl = 'api/orders';
-    constructor(private readonly http: HttpClient) {}
+export class OrderService {
 
-    // private orders: Order[] = [];
-    // private ordersSubject = new BehaviorSubject<Order[]>([]);
-    // public orders$ = this.ordersSubject.asObservable();
-    // private nextOrderId = 1;
+    private readonly authService = inject(AuthService);
+    private readonly http = inject(HttpClient);
+    private readonly storage = inject(StorageService);
 
-    public getOrders(): Observable<Order[]>{
-        return this.http.get<Order[]>(this.apiUrl);
+    private readonly ordersUrl = 'api/orders';
+    private readonly createOrderUrl = 'api/order';
+    
+
+    public getOrders(): Observable<Order[]> {
+        console.log('[API] → GET', this.ordersUrl);
+        return this.http.get<Order[]>(this.ordersUrl).pipe(
+            map((apiOrders) => this.getMergedOrders(apiOrders, this.getSavedOrders())),
+            tap((orders) => console.log('[API] ← GET', this.ordersUrl, orders)),
+        );
     }
 
-    public createOrder(cartItems: CartItem[]): Observable<Order | null>{
-        if(cartItems.length === 0){
+    public createOrder(cartItems: CartItem[]): Observable<Order | null> {
+        if (cartItems.length === 0) {
+            return of(null);
+        }
+
+        const currentUser = this.authService.getCurrentUser();
+        if (!currentUser) {
             return of(null);
         }
 
@@ -30,14 +41,45 @@ export class OrderService{
         }, 0);
 
         const newOrder = {
-            date: new Date().toISOString(),
+            date: new Date().toISOString().slice(0, 10),
             items: [...cartItems],
             total_price: totalPrice,
-            status: 'Сборка' as const
-        }
+            status: OrderStatus.Assembly,
+        };
 
-        return this.http.post<Order>(this.apiUrl, newOrder);
-        // this.orders.push(newOrder);
-        // this.ordersSubject.next([...this.orders]);
+        
+        const headers = new HttpHeaders({ 'X-User-Id': String(currentUser.id),});
+
+        return this.http.post<Order>(this.createOrderUrl, newOrder, { headers }).pipe(
+            tap((order) => {
+                console.log('[API] ← POST', this.createOrderUrl, order);
+                this.addOrderToStorage(order);
+            }),
+        );
+    }
+
+    private getMergedOrders(apiOrders: Order[], savedOrders: Order[]): Order[] {
+        const merged = [...apiOrders];
+        for (const savedOrder of savedOrders) {
+            const alreadyExists = merged.some((order) => order.id === savedOrder.id);
+            if (!alreadyExists) {
+                merged.push(savedOrder);
+            }
+        }
+        return merged;
+    }
+
+    private getSavedOrders(): Order[] {
+        return this.storage.getObject<Order[]>(STORAGE_KEYS.ORDERS) ?? [];
+    }
+
+    private saveOrders(orders: Order[]): void {
+        this.storage.setObject(STORAGE_KEYS.ORDERS, orders);
+    }
+
+    private addOrderToStorage(order: Order): void {
+        const savedOrders = this.getSavedOrders();
+        savedOrders.push(order);
+        this.saveOrders(savedOrders);
     }
 }

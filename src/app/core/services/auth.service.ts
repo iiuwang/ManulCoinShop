@@ -1,69 +1,61 @@
-import { Injectable } from "@angular/core";
-import { HttpClient, HttpParams } from "@angular/common/http";
-import { LoginData } from "../models/login-data.interface";
-import { User } from "../models/user.interface";
-import {Observable, BehaviorSubject, map} from "rxjs";
-
-type UserWithPassword = User & { password: string };
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { LoginData } from '../models/login-data.interface';
+import { User } from '../models/user.interface';
+import { Observable, BehaviorSubject,  of, tap } from 'rxjs';
+import { StorageService, STORAGE_KEYS } from './storage.service';
 
 @Injectable({
     providedIn: 'root',
 })
-export class AuthService{
-
-    private readonly apiUrl = 'api/users';
+export class AuthService {
+    private readonly loginUrl = 'api/auth/login';
+    private readonly userUrl = 'api/user';
+    private readonly storage = inject(StorageService);
 
     private currentUserSubject = new BehaviorSubject<User | null>(this.getSavedUser());
     public currentUser$ = this.currentUserSubject.asObservable();
-    
-    constructor(private readonly http: HttpClient){}
+
+    private readonly http = inject(HttpClient);
+
+
+    private saveUser(user: User): void {
+        this.storage.setObject(STORAGE_KEYS.CURRENT_USER, user);
+        this.currentUserSubject.next(user);
+    }
 
     private getSavedUser(): User | null {
-        const savedUser = localStorage.getItem('currentUser');
-      
-        if (!savedUser) {
-          return null;
-        }
-      
-        return JSON.parse(savedUser);
-      }
-
-    public login(data: LoginData): Observable<boolean>{
-
-        const params = new HttpParams().set('login', data.login).set('password', data.password);
-
-        return this.http.get<UserWithPassword[]>(this.apiUrl, {params}).pipe(
-            map(users =>{
-                const foundUser = users[0];
-
-                if(!foundUser){
-                    return false;
-                }
-
-                const user: User ={
-                    id: foundUser.id,
-                    name: foundUser.name,
-                    balance: foundUser.balance,
-                    login: foundUser.login
-                }
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                this.currentUserSubject.next(user);
-        
-                return true; 
-            })
-        )
-        
-        //const foundUser = this.users.find(user => user.login === data.login && user.password === data.password)
-
-        
+        return this.storage.getObject<User>(STORAGE_KEYS.CURRENT_USER);
     }
 
-    public logout(): void{
-        localStorage.removeItem('currentUser');
+    public login(data: LoginData): Observable<User> {
+        return this.http.post<User>(this.loginUrl, data).pipe(
+            tap((user) => this.saveUser(user)),
+        );
+    }
+
+    public getUser(): Observable<User | null> {
+        const savedUser = this.getSavedUser();
+        if (!savedUser) {
+            return of(null);
+        }
+        const headers = new HttpHeaders({
+            'X-User-Id': String(savedUser.id),
+        });
+        return this.http.get<User>(this.userUrl, { headers }).pipe(
+            tap((user) => {
+                this.saveUser(user);
+            })
+        );
+    }
+
+    public logout(): void {
+        this.storage.removeItem(STORAGE_KEYS.CURRENT_USER);
         this.currentUserSubject.next(null);
     }
-    
-    public getCurrentUser(): User | null{
+
+    public getCurrentUser(): User | null {
         return this.currentUserSubject.value;
     }
+
 }

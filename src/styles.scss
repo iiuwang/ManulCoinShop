@@ -19,15 +19,14 @@ html {
         )
     );
 }
-:root{
+:root {
     --text: #323743;
-    --logo:
+;
 }
 
 .page-content {
-  padding: 0 40px;
+    padding: 0 100px;
 }
-
 
 body {
     color-scheme: light;
@@ -51,30 +50,37 @@ p {
 
 h1,
 .mat-typography h1 {
-  font-size: 52px;
-  line-height: 1.15;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0;
+    font-size: 52px;
+    line-height: 1.15;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
 }
 h2,
 .mat-typography h2 {
-  font-size: 40px;
-  line-height: 1.2;
-  font-weight: 700;
-  color: var(--text);
+    font-size: 40px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: var(--text);
 }
 h3,
 .mat-typography h3 {
-  font-size: 32px;
-  line-height: 1.25;
-  font-weight: 700;
-  color: var(--text);
+    font-size: 32px;
+    line-height: 1.25;
+    font-weight: 700;
+    color: var(--text);
 }
 h4,
 .mat-typography h4 {
-  font-size: 24px;
-  line-height: 1.3;
-  font-weight: 400;
-  color: var(--text);
+    font-size: 24px;
+    line-height: 1.3;
+    font-weight: 400;
+    color: var(--text);
+}
+
+.loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 200px);
 }

@@ -1,22 +1,19 @@
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { Product } from "../models/product.interface";
-import { Observable} from "rxjs";
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Product } from '../models/product.interface';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
 })
-export class ProductService{
+export class ProductService {
     private readonly apiUrl = 'api/products';
-    constructor(private http: HttpClient){}
-    
+    private readonly http = inject(HttpClient);
 
-    getProducts(): Observable<Product[]>{
-        return  this.http.get<Product[]>(this.apiUrl);
-    }
-
-    getProductById(id: number): Observable<Product>{
-        return this.http.get<Product>(`${this.apiUrl}/${id}`);
-        //return of(this.products.find(product=>product.id === id))
+    public getProducts(): Observable<Product[]> {
+        console.log('[API] → GET', this.apiUrl);
+        return this.http
+            .get<Product[]>(this.apiUrl)
+            .pipe(tap((products) => console.log('[API] ← GET', this.apiUrl, products)));
     }
 }

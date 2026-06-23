@@ -1,10 +1,15 @@
-import { CartItem } from "./cart-item.interface";
+import { CartItem } from './cart-item.interface';
 
-export interface Order{
+export interface Order {
     id: number;
     date: string;
     items: CartItem[];
     total_price: number;
-    status: 'Сборка'|'В пути'|'Выдан';
-    
+    status: OrderStatus;
+}
+
+export enum OrderStatus {
+    Assembly = 'assembly',
+    InTransit = 'in_transit',
+    Completed = 'completed',
 }
