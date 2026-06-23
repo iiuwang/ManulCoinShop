@@ -30,3 +30,13 @@ form {
     width: 400px;
     padding: 24px;
 }
+
+.auth-mode-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.auth-mode-actions button {
+    flex: 1;
+}

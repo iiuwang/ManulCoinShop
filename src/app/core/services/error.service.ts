@@ -22,6 +22,12 @@ export class ErrorService {
                 return 'errors.unauthorized';
             case 'USER_NOT_FOUND':
                 return 'errors.userNotFound';
+            case 'LOGIN_ALREADY_EXISTS':
+                return 'errors.loginAlreadyExists';
+            case 'PRODUCT_NOT_FOUND':
+                return 'errors.productNotFound';
+            case 'EMPTY_ORDER':
+                return 'errors.emptyOrder';
             case 'INSUFFICIENT_FUNDS':
                 return 'errors.insufficientFunds';
             default:
@@ -32,21 +38,20 @@ export class ErrorService {
     private getErrorCode(error: unknown): string | undefined {
         if (error instanceof HttpErrorResponse) {
             const body = error.error;
-            if (body && typeof body === 'object' && 'error' in body) {
-                return (body as { error: string }).error;
+            if (body && typeof body === 'object') {
+                if ('error' in body) {
+                    return (body as { error: string }).error;
+                }
+                if ('detail' in body) {
+                    const detail = (body as { detail: unknown }).detail;
+                    if (detail && typeof detail === 'object' && 'error' in detail) {
+                        return (detail as { error: string }).error;
+                    }
+                }
             }
             return undefined;
         }
-    
-        if (error && typeof error === 'object' && 'body' in error) {
-            const body = (error as { body: unknown }).body;
-            if (body && typeof body === 'object' && 'error' in body) {
-                return (body as { error: string }).error;
-            }
-        }
-    
+
         return undefined;
     }
-
-
 }
