@@ -1,13 +1,47 @@
 <main>
     <section class="auth-header">
         <h3>{{ 'auth.title' | translate }}</h3>
-        <h4>{{ 'auth.subtitle' | translate }}</h4>
+        <h4>
+            {{ isRegisterMode() ? ('auth.registerSubtitle' | translate) : ('auth.subtitle' | translate) }}
+        </h4>
     </section>
     <mat-card class="auth-card">
+        <div class="auth-mode-actions">
+            <button
+                mat-stroked-button
+                type="button"
+                [disabled]="!isRegisterMode()"
+                (click)="switchMode('login')"
+            >
+                {{ 'auth.loginButton' | translate }}
+            </button>
+            <button
+                mat-stroked-button
+                type="button"
+                [disabled]="isRegisterMode()"
+                (click)="switchMode('register')"
+            >
+                {{ 'auth.registerButton' | translate }}
+            </button>
+        </div>
+
         <form (ngSubmit)="onSubmit()" [formGroup]="form">
+            @if (isRegisterMode()) {
+                <mat-form-field>
+                    <mat-label>{{ 'auth.name' | translate }}:</mat-label>
+                    <input matInput formControlName="name" type="text" />
+                    @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+                        <mat-error>{{ 'auth.nameRequired' | translate }}</mat-error>
+                    }
+                    @if (form.get('name')?.hasError('minlength') && form.get('name')?.touched) {
+                        <mat-error>{{ 'auth.minLengthName' | translate }}</mat-error>
+                    }
+                </mat-form-field>
+            }
+
             <mat-form-field>
                 <mat-label>{{ 'auth.login' | translate }}:</mat-label>
-                <input matInput formControlName="login" type="password" />
+                <input matInput formControlName="login" type="text" />
                 @if (form.get('login')?.hasError('required') && form.get('login')?.touched) {
                     <mat-error>{{ 'auth.loginRequired' | translate }}</mat-error>
                 }
@@ -27,9 +61,8 @@
             </mat-form-field>
 
             <button mat-flat-button type="submit" [disabled]="form.invalid">
-                {{ 'auth.loginButton' | translate }}
+                {{ isRegisterMode() ? ('auth.registerButton' | translate) : ('auth.loginButton' | translate) }}
             </button>
-            
         </form>
     </mat-card>
 </main>

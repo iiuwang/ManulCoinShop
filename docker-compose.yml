@@ -1,0 +1,20 @@
+services:
+  backend:
+    build: ./backend
+    container_name: manul-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/data:/app/data
+
+  frontend:
+    build: .
+    container_name: manul-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./proxy.docker.conf.json:/app/proxy.docker.conf.json
