@@ -8,7 +8,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { TranslateService } from '@ngx-translate/core';
+import { ErrorService } from '../../core/services/error.service';
+import { HttpErrorResponse } from '@angular/common/http';
 @Component({
     selector: 'app-auth',
     imports: [
@@ -24,10 +25,9 @@ import { TranslateService } from '@ngx-translate/core';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Auth {
-    private readonly translate = inject(TranslateService);
+    private readonly errorService = inject(ErrorService);
     private readonly router = inject(Router);
     private readonly authService = inject(AuthService);
-    protected readonly loginError = signal<string>('');
 
     protected readonly form = new FormGroup({
         login: new FormControl('', {
@@ -45,17 +45,18 @@ export class Auth {
             this.form.markAllAsTouched();
             return;
         }
-        this.loginError.set('');
         const login = this.form.get('login')?.value ?? '';
         const password = this.form.get('password')?.value ?? '';
 
-        this.authService.login({ login, password }).subscribe((isLoggedIn) => {
-            if (isLoggedIn) {
+        this.authService.login({ login, password }).subscribe({
+            next: () => {
                 this.router.navigate(['/catalog_products']);
-            } else {
-                this.loginError.set(this.translate.instant('auth.loginError'));
+            },
+            error: (err) => {
+
+                this.errorService.handle(err);
                 this.form.reset();
-            }
+            },
         });
     }
 }

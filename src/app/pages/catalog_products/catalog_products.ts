@@ -16,6 +16,7 @@ import { NotificationService } from '../../core/services/notification.service';
 import { TranslatePipe } from '@ngx-translate/core';
 import { finalize } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ProductCard } from '../../shared/components/product-card/product-card';
 @Component({
     selector: 'app-catalog-products',
     imports: [
@@ -28,6 +29,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         MatPaginatorModule,
         TranslatePipe,
         MatProgressSpinnerModule,
+        ProductCard,
     ],
     templateUrl: './catalog_products.html',
     styleUrl: './catalog_products.scss',
@@ -39,12 +41,14 @@ export class CatalogProducts {
     private readonly notification = inject(NotificationService);
 
     protected readonly isLoading = signal(true);
+    protected readonly typeSort = signal<'default' | 'asc' | 'desc'>('default');
+    protected pageIndex = signal(0);
+    protected pageSize = signal(8);
     protected readonly products = toSignal(
         this.productService.getProducts().pipe(finalize(() => this.isLoading.set(false))),
         { initialValue: [] },
     );
-    //для сортировки
-    protected readonly typeSort = signal<'default' | 'asc' | 'desc'>('default');
+    protected readonly cartItems = toSignal(this.cartService.cartItems$, { initialValue: [] });
     protected readonly sortedProducts = computed(() => {
         const defaultProducts = this.products();
         if (this.typeSort() === 'default') {
@@ -58,26 +62,21 @@ export class CatalogProducts {
         return copy.sort((a, b) => b.price - a.price);
     });
 
-    protected onSortChange(event: MatSelectChange<'default' | 'asc' | 'desc'>): void {
-        this.typeSort.set(event.value);
-        this.pageIndex.set(0);
-    }
-
-    //для пагинации
-    protected pageIndex = signal(0);
-    protected pageSize = signal(8);
     protected readonly pagedProducts = computed(() => {
         const start = this.pageIndex() * this.pageSize();
         const end = start + this.pageSize();
         return this.sortedProducts().slice(start, end);
     });
 
+    protected onSortChange(event: MatSelectChange<'default' | 'asc' | 'desc'>): void {
+        this.typeSort.set(event.value);
+        this.pageIndex.set(0);
+    }
+
     protected onPageChange(event: PageEvent): void {
         this.pageIndex.set(event.pageIndex);
         this.pageSize.set(event.pageSize);
     }
-
-    protected readonly cartItems = toSignal(this.cartService.cartItems$, { initialValue: [] });
 
     protected addToCart(product: Product): void {
         this.cartService.addToCart(product);

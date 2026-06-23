@@ -56,7 +56,7 @@
                                 <span class="order-date">{{ order.date.split('T')[0] }}</span>
                                 <span class="order-status" [attr.data-status]="order.status">
                                     <span class="status-dot"></span>
-                                    {{ statusKey(order.status) | translate }}
+                                    {{ getStatusTranslationKey(order.status) | translate }}
                                 </span>
                             </div>
                         </div>
@@ -68,7 +68,7 @@
                             >
                             <span class="order-items-count"
                                 >{{ 'orders.orderCount' | translate }}:
-                                {{ itemsCount(order) }}</span
+                                {{ getItemsCount(order) }}</span
                             >
                         </div>
 

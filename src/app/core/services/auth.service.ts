@@ -2,7 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { LoginData } from '../models/login-data.interface';
 import { User } from '../models/user.interface';
-import { Observable, BehaviorSubject, map, catchError, of, tap } from 'rxjs';
+import { Observable, BehaviorSubject,  of, tap } from 'rxjs';
+import { StorageService, STORAGE_KEYS } from './storage.service';
 
 @Injectable({
     providedIn: 'root',
@@ -10,49 +11,26 @@ import { Observable, BehaviorSubject, map, catchError, of, tap } from 'rxjs';
 export class AuthService {
     private readonly loginUrl = 'api/auth/login';
     private readonly userUrl = 'api/user';
+    private readonly storage = inject(StorageService);
 
     private currentUserSubject = new BehaviorSubject<User | null>(this.getSavedUser());
     public currentUser$ = this.currentUserSubject.asObservable();
 
     private readonly http = inject(HttpClient);
 
-    private balanceKey(userId: number): string {
-        return `userBalance_${userId}`;
-    }
-
-    private applySavedBalance(user: User): User {
-        const savedBalance = localStorage.getItem(this.balanceKey(user.id));
-        if (savedBalance === null) {
-            return user;
-        }
-        return { ...user, balance: Number(savedBalance) };
-    }
 
     private saveUser(user: User): void {
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        localStorage.setItem(this.balanceKey(user.id), String(user.balance));
+        this.storage.setObject(STORAGE_KEYS.CURRENT_USER, user);
         this.currentUserSubject.next(user);
     }
 
     private getSavedUser(): User | null {
-        const savedUser = localStorage.getItem('currentUser');
-
-        if (!savedUser) {
-            return null;
-        }
-
-        return this.applySavedBalance(JSON.parse(savedUser));
+        return this.storage.getObject<User>(STORAGE_KEYS.CURRENT_USER);
     }
 
-    public login(data: LoginData): Observable<boolean> {
+    public login(data: LoginData): Observable<User> {
         return this.http.post<User>(this.loginUrl, data).pipe(
-            map((user) => {
-                this.saveUser(this.applySavedBalance(user));
-                return true;
-            }),
-            catchError(() => {
-                return of(false);
-            }),
+            tap((user) => this.saveUser(user)),
         );
     }
 
@@ -66,16 +44,13 @@ export class AuthService {
         });
         return this.http.get<User>(this.userUrl, { headers }).pipe(
             tap((user) => {
-                this.saveUser(this.applySavedBalance(user));
-            }),
-            catchError(() => {
-                return of(null);
-            }),
+                this.saveUser(user);
+            })
         );
     }
 
     public logout(): void {
-        localStorage.removeItem('currentUser');
+        this.storage.removeItem(STORAGE_KEYS.CURRENT_USER);
         this.currentUserSubject.next(null);
     }
 
@@ -83,9 +58,4 @@ export class AuthService {
         return this.currentUserSubject.value;
     }
 
-    public updateBalance(newBalance: number): void {
-        const user = this.getCurrentUser();
-        if (!user) return;
-        this.saveUser({ ...user, balance: newBalance });
-    }
 }

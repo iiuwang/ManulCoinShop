@@ -1,32 +1,33 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { CartItem } from '../models/cart-item.interface';
 import { Product } from '../models/product.interface';
 import { BehaviorSubject } from 'rxjs';
+import { StorageService, STORAGE_KEYS } from './storage.service';
 
 @Injectable({
     providedIn: 'root',
 })
 export class CartService {
+    private readonly storage = inject(StorageService);
+
     private cartItems: CartItem[] = this.getSavedCartItems();
     private cartItemsSubject = new BehaviorSubject<CartItem[]>(this.cartItems);
     public cartItems$ = this.cartItemsSubject.asObservable();
     private nextCartItemId = this.getNextCartItemId(this.cartItems);
+    
 
     private getSavedCartItems(): CartItem[] {
-        const savedCartItems = localStorage.getItem('cartItems');
-        if (!savedCartItems) {
-            return [];
-        }
-        return JSON.parse(savedCartItems);
+        return this.storage.getObject<CartItem[]>(STORAGE_KEYS.CART_ITEMS) ?? [];
     }
 
     private getNextCartItemId(items: CartItem[]): number {
-        if (items.length === 0) {
-            return 0;
+        let max = -1;
+        for (const item of items) {
+            if (item.id > max) max = item.id;
         }
-        return Math.max(...items.map((item) => item.id)) + 1;
+        return max + 1;
     }
-
+    
     public addToCart(product: Product): void {
         const productItem = this.cartItems.find((item) => item.product.id === product.id);
         if (productItem) {
@@ -71,7 +72,7 @@ export class CartService {
     }
 
     private saveCart(): void {
-        localStorage.setItem('cartItems', JSON.stringify(this.cartItems));
+        this.storage.setObject(STORAGE_KEYS.CART_ITEMS, this.cartItems);
         this.cartItemsSubject.next([...this.cartItems]);
     }
 }

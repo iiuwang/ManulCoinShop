@@ -1,0 +1,20 @@
+<section class="product-card">
+    <img [src]="product().image" [alt]="product().name | translate" />
+    <h4>{{ product().name | translate }}</h4>
+    <p>{{ product().price }} {{ 'common.coins' | translate }}</p>
+    @if (cartItem(); as item) {
+        <div class="quantity">
+            <button mat-icon-button type="button" (click)="decrease.emit()">
+                <mat-icon>remove</mat-icon>
+            </button>
+            <span>{{ item.quantity }}</span>
+            <button mat-icon-button type="button" (click)="increase.emit()">
+                <mat-icon>add</mat-icon>
+            </button>
+        </div>
+    } @else {
+        <button mat-flat-button class="add-cart-button" type="button" (click)="addToCart.emit()">
+            <mat-icon>add</mat-icon>{{ 'catalog.addToCart' | translate }}
+        </button>
+    }
+</section>
