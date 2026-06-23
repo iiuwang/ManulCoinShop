@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
     InMemoryDbService,
     RequestInfo,
@@ -10,12 +10,18 @@ import { Observable } from 'rxjs';
 import { User } from '../models/user.interface';
 import { Order } from '../models/order.interface';
 import { HttpRequest } from '@angular/common/http';
+import { STORAGE_KEYS, StorageService } from '../services/storage.service';
 
 @Injectable({
     providedIn: 'root',
 })
 export class InMemoryDataService implements InMemoryDbService {
+    
+    private readonly storage = inject(StorageService);
+    private nextOrderId = 1;
     createDb() {
+        const saved = this.storage.getObject<Order[]>(STORAGE_KEYS.ORDERS) ?? [];
+        this.nextOrderId = saved.reduce((max, o) => Math.max(max, o.id), 0) + 1;
         const products = [
             {
                 id: 1,
@@ -141,7 +147,7 @@ export class InMemoryDataService implements InMemoryDbService {
 
             if (!userId) {
                 return this.finishOptions(
-                    { status: STATUS.UNAUTHORIZED, body: { error: 'Unauthorized' } },
+                    { status: STATUS.UNAUTHORIZED, body: { error: 'UNAUTHORIZED' } },
                     reqInfo,
                 );
             }
@@ -151,7 +157,7 @@ export class InMemoryDataService implements InMemoryDbService {
 
             if (!foundUser) {
                 return this.finishOptions(
-                    { status: STATUS.NOT_FOUND, body: { error: 'User not found' } },
+                    { status: STATUS.NOT_FOUND, body: { error: 'USER_NOT_FOUND' } },
                     reqInfo,
                 );
             }
@@ -181,7 +187,7 @@ export class InMemoryDataService implements InMemoryDbService {
                 return this.finishOptions(
                     {
                         status: STATUS.UNAUTHORIZED,
-                        body: { error: 'Неверный логин или пароль' },
+                        body: { error: 'INVALID_CREDENTIALS' },
                     },
                     reqInfo,
                 );
@@ -198,20 +204,46 @@ export class InMemoryDataService implements InMemoryDbService {
 
     private createOrder(reqInfo: RequestInfo) {
         return reqInfo.utils.createResponse$(() => {
-            const db = reqInfo.utils.getDb() as { orders: Array<Record<string, unknown>> };
-            const newOrder = reqInfo.utils.getJsonBody(reqInfo.req) as Record<string, unknown>;
-            newOrder['id'] = this.genId(db.orders as Array<{ id: number }>, 'orders');
-            db.orders.push(newOrder);
-            return this.finishOptions({ status: STATUS.CREATED, body: newOrder }, reqInfo);
+            const db = reqInfo.utils.getDb() as {
+                orders: Order[];
+                users: Array<User & { password: string }>;
+            };
+            const userId = (reqInfo.req as HttpRequest<unknown>).headers.get('X-User-Id');
+            if (!userId) {
+                return this.finishOptions(
+                    { status: STATUS.UNAUTHORIZED, body: { error: 'UNAUTHORIZED' } },
+                    reqInfo,
+                );
+            }
+            const foundUser = db.users.find((user) => user.id === Number(userId));
+            if (!foundUser) {
+                return this.finishOptions(
+                    { status: STATUS.NOT_FOUND, body: { error: 'USER_NOT_FOUND' } },
+                    reqInfo,
+                );
+            }
+            const newOrder = reqInfo.utils.getJsonBody(reqInfo.req) as Omit<Order, 'id'>;
+            const totalPrice = newOrder.total_price;
+            if (foundUser.balance < totalPrice) {
+                return this.finishOptions(
+                    {
+                        status: STATUS.BAD_REQUEST,
+                        body: { error: 'INSUFFICIENT_FUNDS' },
+                    },
+                    reqInfo,
+                );
+            }
+            foundUser.balance -= totalPrice;
+            const order: Order = {
+                ...newOrder,
+                id: this.nextOrderId++,
+            };
+            db.orders.push(order);
+            return this.finishOptions({ status: STATUS.CREATED, body: order }, reqInfo);
         });
     }
 
-    genId<T extends { id: number }>(collection: T[], _collectionName: string): number {
-        if (collection.length === 0) {
-            return 1;
-        }
-        return Math.max(...collection.map((item) => item.id)) + 1;
-    }
+    
     private finishOptions(options: ResponseOptions, reqInfo: RequestInfo): ResponseOptions {
         options.statusText = getStatusText(options.status ?? STATUS.OK);
         options.headers = reqInfo.headers;

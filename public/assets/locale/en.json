@@ -47,6 +47,13 @@
       "close": "Close",
       "coins": "coins"
     },
+    "errors": {
+      "invalidCredentials": "Invalid login or password",
+      "unauthorized": "Authorization required",
+      "userNotFound": "User not found",
+      "insufficientFunds": "Not enough funds",
+      "unknown": "Something went wrong. Please try again"
+    },
     "orders": {
       "title": "My orders",
       "back": "Back to the catalog",

@@ -10,6 +10,7 @@ import { OrderService } from '../../core/services/order.service';
 import { Header } from '../../shared/components/header/header';
 import { NotificationService } from '../../core/services/notification.service';
 import { TranslatePipe } from '@ngx-translate/core';
+import { ErrorService } from '../../core/services/error.service';
 
 @Component({
     selector: 'app-cart',
@@ -19,6 +20,7 @@ import { TranslatePipe } from '@ngx-translate/core';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Cart {
+    private readonly errorService = inject(ErrorService);
     private readonly cartService = inject(CartService);
     private readonly orderService = inject(OrderService);
     private readonly authService = inject(AuthService);
@@ -62,12 +64,14 @@ export class Cart {
             next: (order) => {
                 if (!order) return;
                 this.cartService.clearCart();
-                this.authService.updateBalance(currentUser.balance - totalPrice);
+                this.authService.getUser().subscribe({
+                    error: (err) => this.errorService.handle(err),
+                });
                 this.notification.showSuccess('cart.orderSuccess');
                 this.router.navigate(['/orders']);
             },
-            error: () => {
-                this.notification.showError('cart.orderError');
+            error: (err) => {
+                this.errorService.handle(err);
             },
         });
     }

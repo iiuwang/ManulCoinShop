@@ -8,4 +8,8 @@ export interface Order {
     status: OrderStatus;
 }
 
-export type OrderStatus = 'assembly' | 'in_transit' | 'completed';
+export enum OrderStatus {
+    Assembly = 'assembly',
+    InTransit = 'in_transit',
+    Completed = 'completed',
+}
