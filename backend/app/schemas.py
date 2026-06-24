@@ -6,11 +6,17 @@ class LoginRequest(BaseModel):
     login: str = Field(min_length=3, max_length=50)
     password: str = Field(min_length=6, max_length=100)
 
+
+class RegisterRequest(LoginRequest):
+    name: str = Field(min_length=2, max_length=50)
+
+
 class UserResponse(BaseModel):
     id: int
     login: str
     name: str
     balance: int
+    token: str | None = None
 
 
 class ProductResponse(BaseModel):
@@ -28,11 +34,17 @@ class OrderItemRequest(BaseModel):
 class CreateOrderRequest(BaseModel):
     items: List[OrderItemRequest]
 
+
+class TopUpRequest(BaseModel):
+    amount: int = Field(gt=0, le=100000)
+
+
 class CartProduct(BaseModel):
     id: int
     name: str
     price: int
     image: str
+
 
 class CartItemResponse(BaseModel):
     id: int

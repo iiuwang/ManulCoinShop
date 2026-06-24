@@ -12,32 +12,32 @@ export class AuthService {
     private readonly loginUrl = 'api/auth/login';
     private readonly userUrl = 'api/user';
     private readonly storage = inject(StorageService);
-    private readonly http = inject(HttpClient);
 
     private currentUserSubject = new BehaviorSubject<User | null>(null);
     public currentUser$ = this.currentUserSubject.asObservable();
 
+    private readonly http = inject(HttpClient);
+
     private saveUser(user: User): void {
-        this.storage.setItem(STORAGE_KEYS.CURRENT_USER_ID, String(user.id));
-        this.currentUserSubject.next(user);
-    }
-
-    private getSavedUserId(): number | null {
-        const raw = this.storage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
-        if (!raw) {
-            return null;
+        if (user.token) {
+            this.storage.setItem(STORAGE_KEYS.CURRENT_USER_TOKEN, user.token);
         }
-        const userId = Number(raw);
-        return Number.isFinite(userId) ? userId : null;
+
+        const { token, ...userWithoutToken } = user;
+        this.currentUserSubject.next(userWithoutToken);
     }
 
-    private getAuthHeaders(): HttpHeaders | null {
-        const userId = this.getSavedUserId();
-        if (!userId) {
+    private getSavedToken(): string | null {
+        return this.storage.getItem(STORAGE_KEYS.CURRENT_USER_TOKEN);
+    }
+
+    public getAuthHeaders(): HttpHeaders | null {
+        const token = this.getSavedToken();
+        if (!token) {
             return null;
         }
         return new HttpHeaders({
-            'X-User-Id': String(userId),
+            Authorization: `Bearer ${token}`,
         });
     }
 
@@ -58,12 +58,12 @@ export class AuthService {
     }
 
     public logout(): void {
-        this.storage.removeItem(STORAGE_KEYS.CURRENT_USER_ID);
+        this.storage.removeItem(STORAGE_KEYS.CURRENT_USER_TOKEN);
         this.currentUserSubject.next(null);
     }
 
     public hasSession(): boolean {
-        return this.getSavedUserId() !== null;
+        return this.getSavedToken() !== null;
     }
 
     public getCurrentUser(): User | null {
