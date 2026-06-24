@@ -4,21 +4,28 @@ import { AuthService } from '../../../core/services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { ErrorService } from '../../../core/services/error.service';
 import { StorageService, STORAGE_KEYS } from '../../../core/services/storage.service';
+
 @Component({
     selector: 'app-header',
-    imports: [RouterLink, MatIconModule, MatButtonModule, TranslatePipe, MatButtonToggleModule],
+    imports: [
+        RouterLink,
+        MatIconModule,
+        MatButtonModule,
+        TranslatePipe,
+        MatButtonToggleModule,
+    ],
     templateUrl: './header.html',
     styleUrl: './header.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Header implements OnInit {
-
-
     private readonly storage = inject(StorageService);
     private readonly errorService = inject(ErrorService);
     private readonly router = inject(Router);
@@ -29,7 +36,7 @@ export class Header implements OnInit {
         initialValue: null,
     });
     protected readonly currentLang = signal<'ru' | 'en'>('ru');
-
+   
     ngOnInit(): void {
         const lang = this.translate.getCurrentLang() as 'ru' | 'en';
         if (lang === 'ru' || lang === 'en') {
@@ -45,7 +52,7 @@ export class Header implements OnInit {
         this.translate.use(lang);
         this.currentLang.set(lang);
     }
-
+    
     protected logout(): void {
         this.authService.logout();
         this.router.navigate(['/']);

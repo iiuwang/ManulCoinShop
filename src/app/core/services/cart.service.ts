@@ -11,6 +11,7 @@ export class CartService {
     private readonly storage = inject(StorageService);
 
     private cartItems: CartItem[] = this.getSavedCartItems();
+    
     private cartItemsSubject = new BehaviorSubject<CartItem[]>(this.cartItems);
     public cartItems$ = this.cartItemsSubject.asObservable();
     private nextCartItemId = this.getNextCartItemId(this.cartItems);

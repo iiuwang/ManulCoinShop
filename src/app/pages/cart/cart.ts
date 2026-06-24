@@ -53,10 +53,8 @@ export class Cart {
 
     protected checkout(): void {
         const currentUser = this.authService.getCurrentUser();
-        if (!currentUser) return;
-
         const totalPrice = this.totalPrice();
-        if (currentUser.balance < totalPrice) {
+        if (currentUser && currentUser.balance < totalPrice) {
             this.notification.showError('cart.notEnoughMoney');
             return;
         }

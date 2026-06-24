@@ -1,75 +1,78 @@
 {
     "header": {
-      "logout": "Exit",
-      "orders": "Orders",
-      "cart": "Cart"
+        "logout": "Exit",
+        "orders": "Orders",
+        "cart": "Cart"
     },
     "cart": {
-      "title": "Cart",
-      "back": "Back to the catalog",
-      "empty": "The cart is empty",
-      "goToCatalog": "Go to catalog",
-      "product": "Product",
-      "quantity": "Quantity",
-      "price": "Price",
-      "clearCart": "Clear cart",
-      "total": "Total",
-      "itemsCount": "Items",
-      "toPay": "To pay",
-      "checkout": "Buy",
-      "notEnoughMoney": "Not enough money",
-      "orderSuccess": "Order successfully created!",
-      "orderError": "Failed to create order"
+        "title": "Cart",
+        "back": "Back to the catalog",
+        "empty": "The cart is empty",
+        "goToCatalog": "Go to catalog",
+        "product": "Product",
+        "quantity": "Quantity",
+        "price": "Price",
+        "clearCart": "Clear cart",
+        "total": "Total",
+        "itemsCount": "Items",
+        "toPay": "To pay",
+        "checkout": "Buy",
+        "notEnoughMoney": "Not enough money",
+        "orderSuccess": "Order successfully created!",
+        "orderError": "Failed to create order"
     },
     "catalog": {
-      "title": "Product catalog",
-      "product": "products",
-      "sortBy": "Sort by",
-      "sortByPriceAsc": "Price ascending",
-      "sortByPriceDesc": "Price descending",
-      "noProducts": "No products",
-      "addToCart": "Add to cart",
-      "addedToCart": "Product added to cart!"
+        "title": "Product catalog",
+        "product": "products",
+        "sortBy": "Sort by",
+        "sortByPriceAsc": "Price ascending",
+        "sortByPriceDesc": "Price descending",
+        "noProducts": "No products",
+        "addToCart": "Add to cart",
+        "addedToCart": "Product added to cart!"
     },
     "auth": {
-      "title": "Welcome!",
-      "subtitle": "Login to your account",
-      "login": "Login",
-      "password": "Password",
-      "loginButton": "Login",
-      "loginError": "Invalid login or password",
-      "minLengthLogin": "Minimum login length is 10 characters",
-      "minLengthPassword": "Minimum password length is 10 characters",
-      "loginRequired": "Enter login",
-      "passwordRequired": "Enter password"
+        "title": "Welcome!",
+        "subtitle": "Login to your account",
+        "login": "Login",
+        "password": "Password",
+        "loginButton": "Login",
+        "loginError": "Invalid login or password",
+        "minLengthLogin": "Minimum login length is 10 characters",
+        "minLengthPassword": "Minimum password length is 10 characters",
+        "loginRequired": "Enter login",
+        "passwordRequired": "Enter password"
     },
     "common": {
-      "close": "Close",
-      "coins": "coins"
+        "close": "Close",
+        "coins": "coins"
     },
     "errors": {
-      "invalidCredentials": "Invalid login or password",
-      "unauthorized": "Authorization required",
-      "userNotFound": "User not found",
-      "insufficientFunds": "Not enough funds",
-      "unknown": "Something went wrong. Please try again"
+        "invalidCredentials": "Invalid login or password",
+        "unauthorized": "Authorization required",
+        "userNotFound": "User not found",
+        "insufficientFunds": "Not enough funds",
+        "unknown": "Something went wrong. Please try again",
+        "loginAlreadyExists": "This login is already taken",
+        "productNotFound": "Product not found",
+        "emptyOrder": "Cannot create an empty order"
     },
     "orders": {
-      "title": "My orders",
-      "back": "Back to the catalog",
-      "allOrders": "All orders",
-      "assembly": "Assembly",
-      "in_transit": "In transit",
-      "completed": "Completed",
-      "noOrders": "No orders",
-      "goToCatalog": "Go to catalog",
-      "orderId": "Order",
-      "orderCount": "Product count",
-      "product": "Product",
-      "quantity": "Quantity",
-      "price": "Price",
-      "total": "Total",
-      "itemsCount": "pcs"
+        "title": "My orders",
+        "back": "Back to the catalog",
+        "allOrders": "All orders",
+        "assembly": "Assembly",
+        "in_transit": "In transit",
+        "completed": "Completed",
+        "noOrders": "No orders",
+        "goToCatalog": "Go to catalog",
+        "orderId": "Order",
+        "orderCount": "Product count",
+        "product": "Product",
+        "quantity": "Quantity",
+        "price": "Price",
+        "total": "Total",
+        "itemsCount": "pcs"
     },
     "products": {
         "mug1": "Mug with manul",
@@ -95,4 +98,4 @@
         "last": "Last page",
         "range": "{{start}}–{{end}} of {{total}}"
     }
-  }
+}

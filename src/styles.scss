@@ -84,3 +84,18 @@ h4,
     align-items: center;
     min-height: calc(100vh - 200px);
 }
+
+app-root {
+    min-height: 100vh;
+    display: block;
+}
+
+.app-layout {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-content {
+    flex: 1;
+}

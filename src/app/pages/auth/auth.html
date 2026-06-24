@@ -7,7 +7,7 @@
         <form (ngSubmit)="onSubmit()" [formGroup]="form">
             <mat-form-field>
                 <mat-label>{{ 'auth.login' | translate }}:</mat-label>
-                <input matInput formControlName="login" type="password" />
+                <input matInput formControlName="login" type="text" />
                 @if (form.get('login')?.hasError('required') && form.get('login')?.touched) {
                     <mat-error>{{ 'auth.loginRequired' | translate }}</mat-error>
                 }
@@ -29,7 +29,6 @@
             <button mat-flat-button type="submit" [disabled]="form.invalid">
                 {{ 'auth.loginButton' | translate }}
             </button>
-            
         </form>
     </mat-card>
 </main>

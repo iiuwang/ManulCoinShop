@@ -5,12 +5,11 @@ import { AuthService } from '../services/auth.service';
 export const authGuard: CanActivateFn = (route) => {
     const authService = inject(AuthService);
     const router = inject(Router);
-    const isLoggedIn = authService.getCurrentUser() !== null;
+    const hasSession = authService.hasSession();
     const guestOnly = route.data['guestOnly'] === true;
 
-    if (guestOnly){
-        return isLoggedIn ? router.createUrlTree(['/catalog_products']) : true;
-    } else{
-        return isLoggedIn ? true : router.createUrlTree(['/']);
+    if (guestOnly) {
+        return hasSession ? router.createUrlTree(['/catalog_products']) : true;
     }
+    return hasSession ? true : router.createUrlTree(['/']);
 };
