@@ -1,6 +1,8 @@
-from fastapi import FastAPI, Header, HTTPException, status
+from sqlite3 import IntegrityError
+
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Optional
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from .database import get_connection, init_db
 from .schemas import (
@@ -8,10 +10,14 @@ from .schemas import (
     LoginRequest,
     OrderResponse,
     ProductResponse,
+    RegisterRequest,
+    TopUpRequest,
     UserResponse,
 )
+from .security import create_token, hash_password, verify_password
 
 app = FastAPI(title="Manul Coin Shop API")
+security = HTTPBearer()
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,33 +37,64 @@ def error(status_code: int, code: str) -> None:
     raise HTTPException(status_code=status_code, detail={"error": code})
 
 
-def get_user_id(x_user_id: Optional[str]) -> int:
-    if not x_user_id:
-        error(status.HTTP_401_UNAUTHORIZED, "UNAUTHORIZED")
-    try:
-        return int(x_user_id)
-    except ValueError:
-        error(status.HTTP_401_UNAUTHORIZED, "UNAUTHORIZED")
+def create_session(conn, user_id: int) -> str:
+    token = create_token()
+    conn.execute(
+        "INSERT INTO sessions (token, user_id) VALUES (?, ?)",
+        (token, user_id),
+    )
+    return token
 
 
-def row_to_user(row) -> UserResponse:
-    return UserResponse(id=row["id"], login=row["login"], name=row["name"], balance=row["balance"])
+def get_user_id_by_token(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> int:
+    token = credentials.credentials
 
-
-def load_user(user_id: int):
     with get_connection() as conn:
         row = conn.execute(
-            "SELECT id, login, name, balance FROM users WHERE id = ?", (user_id,)
+            "SELECT user_id FROM sessions WHERE token = ?",
+            (token,),
         ).fetchone()
+
+        if not row:
+            error(status.HTTP_401_UNAUTHORIZED, "UNAUTHORIZED")
+
+        return int(row["user_id"])
+
+
+def row_to_user(row, token: str | None = None) -> UserResponse:
+    return UserResponse(
+        id=row["id"],
+        login=row["login"],
+        name=row["name"],
+        balance=row["balance"],
+        token=token,
+    )
+
+
+def load_user(user_id: int) -> UserResponse:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT id, login, name, balance FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+
         if not row:
             error(status.HTTP_404_NOT_FOUND, "USER_NOT_FOUND")
+
         return row_to_user(row)
 
 
 def build_order_response(conn, order_id: int) -> OrderResponse:
     order = conn.execute(
-        "SELECT id, date, total_price, status FROM orders WHERE id = ?", (order_id,)
+        "SELECT id, date, total_price, status FROM orders WHERE id = ?",
+        (order_id,),
     ).fetchone()
+
+    if not order:
+        error(status.HTTP_404_NOT_FOUND, "ORDER_NOT_FOUND")
+
     items = conn.execute(
         """
         SELECT oi.id, oi.quantity, p.id AS product_id, p.name, oi.price, p.image
@@ -68,6 +105,7 @@ def build_order_response(conn, order_id: int) -> OrderResponse:
         """,
         (order_id,),
     ).fetchall()
+
     return OrderResponse(
         id=order["id"],
         date=order["date"],
@@ -99,60 +137,141 @@ def login(data: LoginRequest):
     with get_connection() as conn:
         row = conn.execute(
             """
-            SELECT id, login, name, balance
+            SELECT id, login, name, balance, password_hash
             FROM users
-            WHERE login = ? AND password = ?
+            WHERE login = ?
             """,
-            (data.login, data.password),
+            (data.login,),
         ).fetchone()
-        if not row:
+
+        if not row or not verify_password(data.password, row["password_hash"]):
             error(status.HTTP_401_UNAUTHORIZED, "INVALID_CREDENTIALS")
-        return row_to_user(row)
+
+        token = create_session(conn, row["id"])
+        return row_to_user(row, token)
+
+
+@app.post(
+    "/api/auth/register",
+    status_code=status.HTTP_201_CREATED,
+    response_model=UserResponse,
+)
+def register(data: RegisterRequest):
+    with get_connection() as conn:
+        try:
+            cursor = conn.execute(
+                """
+                INSERT INTO users (login, password_hash, name, balance)
+                VALUES (?, ?, ?, 500)
+                """,
+                (data.login, hash_password(data.password), data.name),
+            )
+        except IntegrityError:
+            error(status.HTTP_409_CONFLICT, "LOGIN_ALREADY_EXISTS")
+
+        user_id = cursor.lastrowid
+        token = create_session(conn, user_id)
+
+        row = conn.execute(
+            "SELECT id, login, name, balance FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+
+        return row_to_user(row, token)
+
 
 @app.get("/api/user", response_model=UserResponse)
-def get_current_user(x_user_id: Optional[str] = Header(default=None, alias="X-User-Id")):
-    return load_user(get_user_id(x_user_id))
+def get_current_user(user_id: int = Depends(get_user_id_by_token)):
+    return load_user(user_id)
+
+
+@app.post("/api/user/top-up", response_model=UserResponse)
+def top_up(
+    data: TopUpRequest,
+    user_id: int = Depends(get_user_id_by_token),
+):
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT id FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+
+        if not row:
+            error(status.HTTP_404_NOT_FOUND, "USER_NOT_FOUND")
+
+        conn.execute(
+            "UPDATE users SET balance = balance + ? WHERE id = ?",
+            (data.amount, user_id),
+        )
+
+        updated = conn.execute(
+            "SELECT id, login, name, balance FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+
+        return row_to_user(updated)
+
 
 @app.get("/api/products", response_model=list[ProductResponse])
 def get_products():
     with get_connection() as conn:
-        rows = conn.execute("SELECT id, name, price, image FROM products ORDER BY id").fetchall()
+        rows = conn.execute(
+            "SELECT id, name, price, image FROM products ORDER BY id",
+        ).fetchall()
+
         return [dict(row) for row in rows]
 
 
 @app.get("/api/orders", response_model=list[OrderResponse])
-def get_orders(x_user_id: Optional[str] = Header(default=None, alias="X-User-Id")):
-    user_id = get_user_id(x_user_id)
+def get_orders(user_id: int = Depends(get_user_id_by_token)):
     with get_connection() as conn:
         order_ids = conn.execute(
-            "SELECT id FROM orders WHERE user_id = ? ORDER BY id DESC", (user_id,)
+            "SELECT id FROM orders WHERE user_id = ? ORDER BY id DESC",
+            (user_id,),
         ).fetchall()
+
         return [build_order_response(conn, row["id"]) for row in order_ids]
 
 
-@app.post("/api/order", status_code=status.HTTP_201_CREATED, response_model=OrderResponse)
-def create_order(data: CreateOrderRequest, x_user_id: Optional[str] = Header(default=None, alias="X-User-Id")):
-    user_id = get_user_id(x_user_id)
+@app.post(
+    "/api/order",
+    status_code=status.HTTP_201_CREATED,
+    response_model=OrderResponse,
+)
+def create_order(
+    data: CreateOrderRequest,
+    user_id: int = Depends(get_user_id_by_token),
+):
     if not data.items:
         error(status.HTTP_400_BAD_REQUEST, "EMPTY_ORDER")
 
     with get_connection() as conn:
-        user = conn.execute("SELECT id, balance FROM users WHERE id = ?", (user_id,)).fetchone()
+        user = conn.execute(
+            "SELECT id, balance FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+
         if not user:
             error(status.HTTP_404_NOT_FOUND, "USER_NOT_FOUND")
 
         product_ids = [item.product_id for item in data.items]
         placeholders = ",".join("?" for _ in product_ids)
+
         products = conn.execute(
-            f"SELECT id, price FROM products WHERE id IN ({placeholders})", product_ids
+            f"SELECT id, price FROM products WHERE id IN ({placeholders})",
+            product_ids,
         ).fetchall()
+
         products_by_id = {row["id"]: row for row in products}
 
         total_price = 0
+
         for item in data.items:
             product = products_by_id.get(item.product_id)
+
             if not product:
                 error(status.HTTP_404_NOT_FOUND, "PRODUCT_NOT_FOUND")
+
             total_price += int(product["price"]) * item.quantity
 
         if user["balance"] < total_price:
@@ -162,17 +281,28 @@ def create_order(data: CreateOrderRequest, x_user_id: Optional[str] = Header(def
             "INSERT INTO orders (user_id, total_price, status) VALUES (?, ?, 'assembly')",
             (user_id, total_price),
         )
+
         order_id = cursor.lastrowid
 
         for item in data.items:
             product = products_by_id[item.product_id]
+
             conn.execute(
                 """
                 INSERT INTO order_items (order_id, product_id, quantity, price)
                 VALUES (?, ?, ?, ?)
                 """,
-                (order_id, item.product_id, item.quantity, int(product["price"])),
+                (
+                    order_id,
+                    item.product_id,
+                    item.quantity,
+                    int(product["price"]),
+                ),
             )
 
-        conn.execute("UPDATE users SET balance = balance - ? WHERE id = ?", (total_price, user_id))
+        conn.execute(
+            "UPDATE users SET balance = balance - ? WHERE id = ?",
+            (total_price, user_id),
+        )
+
         return build_order_response(conn, order_id)

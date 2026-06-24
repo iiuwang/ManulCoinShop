@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 const STORAGE_KEYS = {
-    CURRENT_USER_ID: 'currentUserId',
+    CURRENT_USER_TOKEN: 'currentUserToken',
     CART_ITEMS: 'cartItems',
     LANG: 'lang',
 } as const;

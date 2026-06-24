@@ -3,6 +3,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
+from .security import hash_password
+
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "manul_coin_shop.db"
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
@@ -39,6 +41,27 @@ def get_connection() -> Iterator[sqlite3.Connection]:
         conn.close()
 
 
+def _column_exists(conn: sqlite3.Connection, table_name: str, column_name: str) -> bool:
+    rows = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return any(row["name"] == column_name for row in rows)
+
+
+def _migrate_users_table(conn: sqlite3.Connection) -> None:
+    if not _column_exists(conn, "users", "password_hash"):
+        conn.execute("ALTER TABLE users ADD COLUMN password_hash TEXT")
+
+    # If an old local DB exists with plain-text column `password`, convert it once.
+    if _column_exists(conn, "users", "password"):
+        rows = conn.execute(
+            "SELECT id, password FROM users WHERE password_hash IS NULL OR password_hash = ''"
+        ).fetchall()
+        for row in rows:
+            conn.execute(
+                "UPDATE users SET password_hash = ? WHERE id = ?",
+                (hash_password(row["password"]), row["id"]),
+            )
+
+
 def init_db() -> None:
     with get_connection() as conn:
         conn.executescript(
@@ -46,10 +69,17 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 login TEXT NOT NULL UNIQUE,
-                password TEXT NOT NULL,
+                password_hash TEXT,
                 name TEXT NOT NULL,
                 balance INTEGER NOT NULL DEFAULT 0,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS sessions (
+                token TEXT PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
             );
 
             CREATE TABLE IF NOT EXISTS products (
@@ -79,6 +109,7 @@ def init_db() -> None:
             );
             """
         )
+        _migrate_users_table(conn)
         conn.executemany(
             """
             INSERT INTO products (id, name, price, image)
@@ -92,7 +123,8 @@ def init_db() -> None:
         )
         conn.execute(
             """
-            INSERT OR IGNORE INTO users (id, login, password, name, balance)
-            VALUES (1, 'adminadmin', 'qwerty1234', 'Алена', 5000)
-            """
+            INSERT OR IGNORE INTO users (id, login, password_hash, name, balance)
+            VALUES (1, 'adminadmin', ?, 'Алена', 5000)
+            """,
+            (hash_password("qwerty1234"),),
         )

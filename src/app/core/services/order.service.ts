@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of, tap } from 'rxjs';
 import { CartItem } from '../models/cart-item.interface';
 import { Order } from '../models/order.interface';
@@ -16,7 +16,7 @@ export class OrderService {
     private readonly createOrderUrl = 'api/order';
 
     public getOrders(): Observable<Order[]> {
-        const headers = this.getAuthHeaders();
+        const headers = this.authService.getAuthHeaders();
         if (!headers) {
             return of([]);
         }
@@ -31,7 +31,7 @@ export class OrderService {
             return of(null);
         }
 
-        const headers = this.getAuthHeaders();
+        const headers = this.authService.getAuthHeaders();
         if (!headers) {
             return of(null);
         }
@@ -46,14 +46,5 @@ export class OrderService {
         return this.http.post<Order>(this.createOrderUrl, body, { headers }).pipe(
             tap((order) => console.log('[API] ← POST', this.createOrderUrl, order)),
         );
-    }
-
-    private getAuthHeaders(): HttpHeaders | null {
-        const currentUser = this.authService.getCurrentUser();
-        if (!currentUser) {
-            const userId = localStorage.getItem('currentUserId');
-            return userId ? new HttpHeaders({ 'X-User-Id': userId }) : null;
-        }
-        return new HttpHeaders({ 'X-User-Id': String(currentUser.id) });
     }
 }

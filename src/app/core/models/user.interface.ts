@@ -3,4 +3,5 @@ export interface User {
     name: string;
     balance: number;
     login: string;
+    token?: string;
 }
